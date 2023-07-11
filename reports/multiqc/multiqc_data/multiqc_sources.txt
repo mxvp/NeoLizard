@@ -1,0 +1,2 @@
+Module	Section	Sample Name	Source
+FastQC	all_sections	SRR25039062	/Users/mvp/Documents/biolizard/Project/NeoLizard/reports/fastqc/SRR25039062_fastqc.zip
