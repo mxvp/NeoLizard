@@ -1,5 +1,8 @@
-Custom pipeline for neoantigen prediction on NGS samples
+Custom pipeline for neoantigen prediction on NGS samples or TCGA MAF files.
 
-
-Dependencies:
-- FASTQC
+required:
+- perl
+- python
+- Fastqc
+- Multiqc
+- ANNOVAR
