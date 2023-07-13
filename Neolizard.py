@@ -1,35 +1,36 @@
-import argparse
-import sys
-import os
-import subprocess
-from lib import *
-from lib.preprocessing import *
+#!/usr/bin/env python
 
+import argparse
+from lib.preprocessing import *
+from lib.lizard import print_lizard
+
+
+def parse_args():
+    parser=argparse.ArgumentParser(description="Custom pipeline for neoantigen prediction on NGS samples or TCGA MAF files.")
+    parser.add_argument("--loc",type=str,required=True,help="Path to file/directory")
+    parser.add_argument("--format",type=str,required=True,choices=["fastq","sam","bam","maf","vcf"],help="Format of input file(s)")
+    parser.add_argument("--multi",default=False, action="store_true",help="Enable multi-mode when input is a directory with multiple files")
+    parser.add_argument("--QC",default=True, action="store_false",help="Perform quality control on input file(s)")
+    args=parser.parse_args()
+
+
+    return args
 
 def main():
-
-    # 1.Preprocessing
-
-    ## A. Fastqc / multiqc reports
-    QC_type='1'
-    while QC_type=='1':
-        QC_type=input("Create and add fastqc report (1), combine multiqc (2) or continue(3)?")
-        if QC_type=='1':
-            id=input("Enter ID of file in data/raw")
-            output=fastqc_single(id)
-            continue
-        if QC_type=='2':
-            folder=input("Enter folder name within reports e.g. fastqc")
-            output=fastqc_multi(folder)
-            print(output)
-            QC_type='2'
-            continue
-        if QC_type=='3':
-            continue
+    inputs=parse_args()
+    if inputs.format in ["fastq","sam","bam"]:
+        if inputs.multi:
+            fastqc_multi(inputs.loc)
+            multiqc("reports/fastqc")
         else:
-            print('unrecognized')
+            fastqc_single(inputs.loc)
 
-    ## B. 
+
+
+
+    print("Done!")
+    return print_lizard()
+
 
 if __name__=='__main__':
     main()
