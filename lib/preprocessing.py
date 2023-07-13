@@ -27,12 +27,6 @@ def fastqc_single(file):
     except FileNotFoundError:
         return "Fastqc is not properly installed"
     
-def fastqc_multi(path):
-    dir_list=os.listdir(path)
-    dir_list = [x for x in dir_list if not x.startswith('.')]
-    print(f"Processing {len(dir_list)} files in '", path,"'")
-    for file in dir_list:
-        fastqc_single(path+'/'+file)
 
 def multiqc(folder):
     path_to_reports='reports/multiqc'
@@ -58,3 +52,15 @@ def multiqc(folder):
         return None
     except FileNotFoundError:
         return "Multiqc is not properly installed"
+
+def perform_qc(path):
+    if os.path.isdir(path):
+        dir_list=os.listdir(path)
+        dir_list = [x for x in dir_list if not x.startswith('.')]
+        print(f"Processing {len(dir_list)} files in '", path,"'")
+        for file in dir_list:
+            fastqc_single(path+'/'+file)
+        multiqc('reports/fastqc')
+    else:
+        fastqc_single(path)
+    return print("QC completed")
