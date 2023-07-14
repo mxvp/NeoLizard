@@ -6,3 +6,4 @@ required:
 - Fastqc
 - Multiqc
 - ANNOVAR
+- cutadapt

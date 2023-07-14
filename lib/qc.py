@@ -52,6 +52,13 @@ def multiqc(folder):
         return None
     except FileNotFoundError:
         return "Multiqc is not properly installed"
+    
+def scrape_multiqc():
+    with open('reports/multiqc/multiqc_data/multiqc_general_stats.txt','r') as f:
+        for line in f.readlines()[1:]:
+            line=line.split()
+            print(f'Sample {line[0]}:\t Percent duplicates: {str(round(float(line[1]),2))}\t GC-percentage: {str(round(float(line[2]),2))} \t average sequence length: {str(round(float(line[3]),2))}\t Percent fails: {str(round(float(line[4]),2))}\t Total sequences: {str(round(float(line[5]),2))}')
+
 
 def perform_qc(path):
     if os.path.isdir(path):
@@ -63,4 +70,6 @@ def perform_qc(path):
         multiqc('reports/fastqc')
     else:
         fastqc_single(path)
+        multiqc('reports/fastqc')
+    scrape_multiqc()
     return print("QC completed")
