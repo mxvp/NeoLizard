@@ -4,23 +4,26 @@
 # By default, argparse will assume that any argument that starts with a hyphen (-) is an option or flag, and any argument that doesn't start with a hyphen is a positional argument. This means that as long as the arguments provided after the positional argument(s) don't start with a hyphen, argparse will interpret them as values for that positional argument.
 # nargs: multiple values are passed (added to list), "" hyphens work to capture as one value
 
-
+import os
 import argparse
 
 def parse_the_args():
+    # main arguments that work with only --input
     parser = argparse.ArgumentParser(description='Custom pipeline for neoantigen prediction on NGS samples or TCGA MAF files.',prog="NeoLizard")
     parser.add_argument('--input', type=str, required=True, help='Input file(s) path')
+    parser.add_argument('--output',type=str,default=os.getcwd(),help='Provide output folder path. If none is specified, current working directory is used.')
     parser.add_argument('--qc', action='store_true', help='perform QC')
     parser.add_argument('--m2a', action='store_true', help='Convert MAF to AVINPUT')
 
-    # Example argument group
-    cutadapt_parser = parser.add_argument_group('cutadapt', 'Optional argument: cutadapt')
-    cutadapt_parser.add_argument('--cutadapt', action='store_true', help='Enable cutadapt')
-    cutadapt_parser.add_argument('--cutadapt_trimlength', type=int, help='Subargument for cutadapt: trimlength')
-    cutadapt_parser.add_argument('--cutadapt_trimlength2', type=int, help='Subargument for cutadapt: trimlength2')
+
+    # argument groups
+    cutadapt_parser = parser.add_argument_group('cutadapt', 'Cutadapt')
+    cutadapt_parser.add_argument('--cutadapt', action='store_true', help='Perform cutadapt')
+    cutadapt_parser.add_argument('--cutadapt_commands', type=str, help='Enter commands for cutadapt, excluding input and output, as string e.g. "-q 5 -Q 15,20" ')
+    cutadapt_parser.add_argument('--cutadapt_remove', action='store_true', help='Remove original file(s)')
 
     # Example nargs
-    parser.add_argument('--command', nargs='+', help='Command argument')
+    ### parser.add_argument('--command', nargs='+', help='Command argument')
 
     # Parse the arguments
     args = parser.parse_args()

@@ -47,8 +47,8 @@ def maf_2_avinput(file, output_dir):
             outfile.write(annovar_line)
 
 
-def convert_maf_to_avinput(path):
-    output_dir = "avinput_files"
+def convert_maf_to_avinput(path,output):
+    output_dir = os.path.join(output,"avinput_files")
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
