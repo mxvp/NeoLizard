@@ -2,6 +2,15 @@ NeoLizard is a package for setting up and running a custom pipeline for neoantig
 
 Pipeline can start from processed vcf/maf/avinput files or from raw sequencing fastq/bam files.
 
+
+Configuration:
+
+- Make sure annovar is configured, download refgene.txt files manually if download failed.
+
+perl ./annotate_variation.pl -buildver hg38 -downdb refGene humandb/;\
+perl ./annotate_variation.pl --buildver hg38 --downdb seq humandb/hg38_seq;\
+perl ./retrieve_seq_from_fasta.pl humandb/hg38_refGene.txt -seqdir humandb/hg38_seq -format refGene -outfile humandb/hg38_refGeneMrna.fa
+
 Flags:
     --input: Input file(s) path, required.
     --output: Provide output folder path. If none is specified, current working directory is used.

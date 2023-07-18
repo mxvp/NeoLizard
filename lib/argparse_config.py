@@ -14,13 +14,20 @@ def parse_the_args():
     parser.add_argument('--output',type=str,default=os.getcwd(),help='Provide output folder path. If none is specified, current working directory is used.')
     parser.add_argument('--qc', action='store_true', help='perform QC')
     parser.add_argument('--m2a', action='store_true', help='Convert MAF to AVINPUT')
-
+    parser.add_argument('--flanks',type=int,default=10,help='Enter length of flanks surrounding the mutation. Note: Make sure flanks < max(scan_lengths)')
+    parser.add_argument('--scan_lengths',type=int,nargs='+',help='Enter lengths of peptides to scan for. Note: Make sure scan_lengths > flanks')
 
     # argument groups
     cutadapt_parser = parser.add_argument_group('cutadapt', 'Cutadapt')
     cutadapt_parser.add_argument('--cutadapt', action='store_true', help='Perform cutadapt')
     cutadapt_parser.add_argument('--cutadapt_commands', type=str, help='Enter commands for cutadapt, excluding input and output, as string e.g. "-q 5 -Q 15,20" ')
     cutadapt_parser.add_argument('--cutadapt_remove', action='store_true', help='Remove original file(s)')
+
+    annovar_parser = parser.add_argument_group('annovar', 'Annovar')
+    annovar_parser.add_argument('--annovar_annotate_variation',action='store_true', help="Perform annotate_variation.")
+    annovar_parser.add_argument('--annovar_coding_change',action='store_true', help="Perform coding_change.")
+    annovar_parser.add_argument('--annovar_coding_change_commands', type=str, help='Enter commands for annovar, excluding input and output, as string e.g. "-build hg38 -dbtype refGene annovar/humandb/ --comment"')
+    annovar_parser.add_argument('--annovar_annotate_variation_commands', type=str, help='Enter commands for annovar, excluding input and output, as string e.g. "annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate"')
 
     # Example nargs
     ### parser.add_argument('--command', nargs='+', help='Command argument')
