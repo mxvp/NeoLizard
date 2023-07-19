@@ -22,9 +22,22 @@ Flags:
 
 Examples: 
 
+    # performing QC and cutadapt
     python3 Neolizard.py 
         --input testing_area/srr 
         --output testing_area 
+        --qc
         --cutadapt 
         --cutadapt_commands '-m 10 -q 20 -j 4'
         --cutadapt_remove
+
+
+    # starting from maf files
+    python3 Neolizard.py 
+    --input testing_area/maf_files 
+    --output testing_area 
+    --m2a 
+    --annovar_annotate_variation 
+    --annovar_annotate_variation_commands "-build hg38 -dbtype refGene annovar/humandb/ --comment" 
+    --annovar_coding_change 
+    --annovar_coding_change_commands "annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate"
