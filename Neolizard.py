@@ -6,6 +6,8 @@ from lib.cutadapt import perform_cutadapt
 from lib.lizard import print_lizard
 from lib.m2a import convert_maf_to_avinput
 from lib.annovar_functions import perform_annovar
+from lib.cropping_flanks import perform_cropping_fastas
+from lib.MHCflurry_prediction import perform_mhcflurry
 
 def main():
     args=parse_the_args()
@@ -23,7 +25,9 @@ def main():
     if args.annovar_coding_change:
         perform_annovar('coding_change',args.input,args.output,args.annovar_coding_change_commands)
         args.input=os.path.join(args.output,'fastas')            
-
+    if args.mhcflurry:
+        sequences,flanks=perform_cropping_fastas(args.input,max(args.peptide_lengths)-1)
+        perform_mhcflurry(args.output,sequences,flanks,args.peptide_lengths,args.add_flanks,args.alleles)
     print_lizard()
 
 if __name__ == '__main__':

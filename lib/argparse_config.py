@@ -10,12 +10,11 @@ import argparse
 def parse_the_args():
     # main arguments that work with only --input
     parser = argparse.ArgumentParser(description='Custom pipeline for neoantigen prediction on NGS samples or TCGA MAF files.',prog="NeoLizard")
-    parser.add_argument('--input', type=str, required=True, help='Input file(s) path')
+    parser.add_argument('--input', type=str, required=True, help='<Required> Input file(s) path')
     parser.add_argument('--output',type=str,default=os.getcwd(),help='Provide output folder path. If none is specified, current working directory is used.')
     parser.add_argument('--qc', action='store_true', help='perform QC')
     parser.add_argument('--m2a', action='store_true', help='Convert MAF to AVINPUT')
-    parser.add_argument('--flanks',type=int,default=10,help='Enter length of flanks surrounding the mutation. Note: Make sure flanks < max(scan_lengths)')
-    parser.add_argument('--scan_lengths',type=int,nargs='+',help='Enter lengths of peptides to scan for. Note: Make sure scan_lengths > flanks')
+
 
     # argument groups
     cutadapt_parser = parser.add_argument_group('cutadapt', 'Cutadapt')
@@ -28,6 +27,12 @@ def parse_the_args():
     annovar_parser.add_argument('--annovar_coding_change',action='store_true', help="Perform coding_change.")
     annovar_parser.add_argument('--annovar_coding_change_commands', type=str, help='Enter commands for annovar, excluding input and output, as string e.g. "-build hg38 -dbtype refGene annovar/humandb/ --comment"')
     annovar_parser.add_argument('--annovar_annotate_variation_commands', type=str, help='Enter commands for annovar, excluding input and output, as string e.g. "annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate"')
+
+    mhcflurry_parser=parser.add_argument_group('mhcflurry','MHCflurry')
+    mhcflurry_parser.add_argument('--mhcflurry', action='store_true', help='Perform mhcflurry')
+    mhcflurry_parser.add_argument('--add_flanks',action='store_true',help='Generate peptides of given length(s) in sequence and test them --> can add flanks for improved accuracy.')
+    mhcflurry_parser.add_argument('--peptide_lengths',type=int,default=[8,9,10,11],nargs='+',help='Enter length(s) of peptides to scan for.')
+    mhcflurry_parser.add_argument('--alleles',type=str,nargs='+',default=["HLA-A*31:01"],help='Enter the alleles.')
 
     # Example nargs
     ### parser.add_argument('--command', nargs='+', help='Command argument')
