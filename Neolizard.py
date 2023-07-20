@@ -26,7 +26,7 @@ def main():
         perform_annovar('coding_change',args.input,args.output,args.annovar_coding_change_commands)
         args.input=os.path.join(args.output,'fastas')            
     if args.mhcflurry:
-        sequences,flanks=perform_cropping_fastas(args.input,max(args.peptide_lengths)-1)
+        sequences,flanks=perform_cropping_fastas(args.input,min(args.peptide_lengths)-1)
         perform_mhcflurry(args.output,sequences,flanks,args.peptide_lengths,args.add_flanks,args.alleles)
     print_lizard()
 

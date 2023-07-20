@@ -7,31 +7,25 @@ import os
 ## 2) generate peptides of given length(s) in sequence and test them --> can add flanks for improved accuracy
 # option 2 seems most reliable but yet to be benchmarked
 
-def mhcflurry_scan(sequences,lengths,alleles):
-    # Load the trained predictor
-    predictor = Class1PresentationPredictor.load()
 
-    # Use the predictor to make predictions on the sequences
-    return predictor.predict_sequences(sequences, alleles=alleles,peptide_lengths=lengths)
-
-#--------------------
-def mhcflurry_predict(sequences):
-    pass
-
-def create_peptides(sequences,flanks,lengths,alleles):
-    peptides,N_flanks,C_flanks,new_alleles={},[],[]
+def create_peptides(sequences,flanks,lengths):
+    peptides,N_flanks,C_flanks,sequence_names=[],[],[],[]
     for count,value in enumerate(sequences):
         seq=value[1]
+        name=value[0].split()[1]
         for l in lengths:
-            # sliding window approach here!
+            for index in range(len(seq)):
+                if index + l <= len(seq):  # Check if slicing is possible
+                    peptides.append(seq[index:index + l])
+                    N_flanks.append(flanks[count][0] + seq[:index])
+                    C_flanks.append(seq[index:] + flanks[count][1])
+                    sequence_names.append(name)
+    return peptides,N_flanks,C_flanks,sequence_names
 
-
-            new_alleles.append(alleles[count])
-    return peptides,N_flanks,C_flanks,new_alleles
-#---------------------
 
 
 def perform_mhcflurry(output,sequences,flanks,lengths,add_flanks,alleles):
+    predictor = Class1PresentationPredictor.load()
     # Create a list of alleles matching the number of sequences
     if len(alleles)==1:
         alleles = alleles * len(sequences)  # Replace with the desired allele
@@ -40,13 +34,16 @@ def perform_mhcflurry(output,sequences,flanks,lengths,add_flanks,alleles):
     
     outfile = os.path.join(output, "predictions.csv")
     if add_flanks:
-        with open(outfile,'a') as f:
-            peptides,N_flanks,C_flanks,alleles=create_peptides(sequences,flanks,lengths,alleles)
-            mhcflurry_predict(peptides,N_flanks,C_flanks,alleles).to_csv(outfile,index=False)
+        peptides,N_flanks,C_flanks,sequence_names=create_peptides(sequences,flanks,lengths)
+        predictions=predictor.predict(peptides=peptides,n_flanks=N_flanks,c_flanks=C_flanks, alleles=alleles)
+        predictions.insert(0, 'sequence_name', sequence_names)
+        predictions.to_csv(outfile,index=False)
     else:
         sequences={i[0].split()[1]:i[1]for i in sequences}
-        mhcflurry_scan(sequences,lengths,alleles).to_csv(outfile,index=False)
+        predictor.predict_sequences(sequences, alleles=alleles,peptide_lengths=lengths).to_csv(outfile,index=False)
     return print("Predictions completed.")
+
+
 
 
 #The binding affinity predictions are given as affinities (KD) in nM in the mhcflurry_affinity column. Lower values indicate stronger binders. A commonly-used threshold for peptides with a reasonable chance of being immunogenic is 500 nM.
