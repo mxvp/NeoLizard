@@ -26,12 +26,6 @@ def create_peptides(sequences,flanks,lengths):
 
 def perform_mhcflurry(output,sequences,flanks,lengths,add_flanks,alleles):
     predictor = Class1PresentationPredictor.load()
-    # Create a list of alleles matching the number of sequences
-    if len(alleles)==1:
-        alleles = alleles * len(sequences)  # Replace with the desired allele
-    else:
-        alleles.extend(["HLA-A*31:01"]*(len(sequences)-len(alleles)))
-    
     outfile = os.path.join(output, "predictions.csv")
     if add_flanks:
         peptides,N_flanks,C_flanks,sequence_names=create_peptides(sequences,flanks,lengths)
@@ -39,6 +33,11 @@ def perform_mhcflurry(output,sequences,flanks,lengths,add_flanks,alleles):
         predictions.insert(0, 'sequence_name', sequence_names)
         predictions.to_csv(outfile,index=False)
     else:
+        # Create a list of alleles matching the number of sequences
+        if len(alleles)==1:
+            alleles = alleles * len(sequences)  # Replace with the desired allele
+        else:
+            alleles.extend(["HLA-A*31:01"]*(len(sequences)-len(alleles)))
         sequences={i[0].split()[1]:i[1]for i in sequences}
         predictor.predict_sequences(sequences, alleles=alleles,peptide_lengths=lengths).to_csv(outfile,index=False)
     return print("Predictions completed.")
