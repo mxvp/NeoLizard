@@ -32,7 +32,7 @@ def parse_the_args():
     mhcflurry_parser.add_argument('--mhcflurry', action='store_true', help='Perform mhcflurry')
     mhcflurry_parser.add_argument('--add_flanks',action='store_true',help='Generate peptides of given length(s) in sequence and test them --> can add flanks for improved accuracy.')
     mhcflurry_parser.add_argument('--peptide_lengths',type=int,default=[8,9,10,11],nargs='+',help='Enter length(s) of peptides to scan for.')
-    mhcflurry_parser.add_argument('--alleles',type=str,nargs='+',default=["HLA-A*31:01"],help='Enter the alleles.')
+    mhcflurry_parser.add_argument('--alleles',type=str,nargs='+',default=["HLA-A*31:01"],help='Enter the HLA alleles.')
 
     # Example nargs
     ### parser.add_argument('--command', nargs='+', help='Command argument')
