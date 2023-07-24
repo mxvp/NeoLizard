@@ -10,7 +10,10 @@ def parse_header(header):
     mutation, pos = None, None
     if "delins" in mutation_info:
         # in case of confirmed del and ins
-        pos = int(mutation_info.split("_")[0][1:])
+        try:
+            pos = int(mutation_info.split("_")[0][1:])
+        except ValueError:
+            pos = int(mutation_info.split("delins")[0][1:])
         length = len(mutation_info.split("delins")[1])
         mutation = "indel"
     elif "ins" in mutation_info:

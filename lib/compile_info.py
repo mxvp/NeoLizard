@@ -1,8 +1,10 @@
 import pandas as pd
 
-df = pd.read_csv('Predictions.txt',index_col=0)
+def retrieve_info(location):
+    df = pd.read_csv('Predictions.txt',index_col=0)
+    headers = df[:,3]
 
-headers = df[:,3]
+
 
 
 # to do: 
