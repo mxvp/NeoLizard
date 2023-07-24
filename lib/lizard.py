@@ -1,5 +1,5 @@
 def print_lizard():
-      art=r'''
+    art = r"""
                 __
                /..\  
          \|/  (    ) \|/ 
@@ -17,8 +17,8 @@ def print_lizard():
                       |:|
                       |:/
           --.________,-_/
-      '''
-      return print(art)
+      """
+    return print(art)
+
 
 # adapted from hjm
-

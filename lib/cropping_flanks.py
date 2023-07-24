@@ -4,55 +4,56 @@ import os
 # if a deletion occurred at the end, it's impossible to generate a unique sequence --> length will be lower than scan_length
 
 
-
 def parse_header(header):
     parts = header.split()
-    mutation_info = list(filter(lambda x: x.startswith('p.'), parts))[0][2:]
-    mutation, pos=None,None
+    mutation_info = list(filter(lambda x: x.startswith("p."), parts))[0][2:]
+    mutation, pos = None, None
     if "del" in mutation_info:
         # In case of deletion: only position is needed where cleavage occurred
-        pos=int(mutation_info.split("_")[0][1:])
+        pos = int(mutation_info.split("_")[0][1:])
         mutation = "del"
-        length=0
+        length = 0
     elif "fs*" in mutation_info:
         # in case of large mutation: position and length of insertion is needed
-        length=int(mutation_info.split('fs*')[1])
-        pos=int(mutation_info.split('fs*')[0][1:-1])
-        mutation="indel"
+        length = int(mutation_info.split("fs*")[1])
+        pos = int(mutation_info.split("fs*")[0][1:-1])
+        mutation = "indel"
     else:
         # in case of snp: position is needed
         pos = int(mutation_info[1:-1])
-        mutation = 'snp'
-        length=0
+        mutation = "snp"
+        length = 0
 
     # Note: python_pos=fasta_pos - 1
-    return mutation, pos-1, length
+    return mutation, pos - 1, length
 
 
-def crop_sequence(seq, pos, flank_length,strip_length):
-    left_strip = seq[max(0, pos - strip_length-flank_length):pos-strip_length]
-    right_strip = seq[pos + strip_length+1:pos + strip_length+ flank_length + 1]
-    remaining_left = seq[:max(0, pos - strip_length-flank_length)]
-    remaining_right = seq[pos + strip_length+flank_length + 1:]
+def crop_sequence(seq, pos, flank_length, strip_length):
+    left_strip = seq[max(0, pos - strip_length - flank_length) : pos - strip_length]
+    right_strip = seq[pos + strip_length + 1 : pos + strip_length + flank_length + 1]
+    remaining_left = seq[: max(0, pos - strip_length - flank_length)]
+    remaining_right = seq[pos + strip_length + flank_length + 1 :]
 
     if len(left_strip) < flank_length:
-        left_strip = seq[:pos-strip_length]
-        remaining_left = ''
+        left_strip = seq[: pos - strip_length]
+        remaining_left = ""
 
     if len(right_strip) < flank_length:
-        right_strip = seq[pos + strip_length+1:]
-        remaining_right = ''
-    
-    return left_strip+seq[pos:(pos+strip_length+1)]+right_strip, (remaining_left, remaining_right)
+        right_strip = seq[pos + strip_length + 1 :]
+        remaining_right = ""
 
+    return left_strip + seq[pos : (pos + strip_length + 1)] + right_strip, (
+        remaining_left,
+        remaining_right,
+    )
 
 
 def process_fasta_file(input_file, flank_length):
     sequences = []
-    cropped_sequences=[]
+    cropped_sequences = []
     flanks = []
 
-    with open(input_file, 'r') as file:
+    with open(input_file, "r") as file:
         current_sequence = ""
         current_header = ""
         for line in file:
@@ -72,29 +73,31 @@ def process_fasta_file(input_file, flank_length):
             continue
         mutation, pos, length = parse_header(header)
         # For compatibility with MHCflurry --> remove last '*'
-        sequence=sequence[:-1]
-        cropped_sequence,flank = crop_sequence(sequence, pos, flank_length, length)
-        cropped_sequences.append((header,cropped_sequence))
+        sequence = sequence[:-1]
+        cropped_sequence, flank = crop_sequence(sequence, pos, flank_length, length)
+        cropped_sequences.append((header, cropped_sequence))
         flanks.append(flank)
 
-    return cropped_sequences,flanks
+    return cropped_sequences, flanks
 
 
-def perform_cropping_fastas(input,flank_length):
-    cropped_sequences=[]
-    flanks=[]
+def perform_cropping_fastas(input, flank_length):
+    cropped_sequences = []
+    flanks = []
     print("Preparing fasta sequences for MHCflurry...")
     if os.path.isdir(input):
-        dir_list=os.listdir(input)
-        dir_list = [x for x in dir_list if not x.startswith('.') and '.fasta' in x] 
-        print(f"Processing {len(dir_list)} files in '", input,"'")
+        dir_list = os.listdir(input)
+        dir_list = [x for x in dir_list if not x.startswith(".") and ".fasta" in x]
+        print(f"Processing {len(dir_list)} files in '", input, "'")
         for file in dir_list:
-            processed_S,processed_F=process_fasta_file(input+'/'+file,flank_length)
+            processed_S, processed_F = process_fasta_file(
+                input + "/" + file, flank_length
+            )
             cropped_sequences.extend(processed_S)
             flanks.extend(processed_F)
     else:
-        processed_S,processed_F=process_fasta_file(input,flank_length)
-        cropped_sequences=processed_S[:]
-        flanks=processed_F[:]
+        processed_S, processed_F = process_fasta_file(input, flank_length)
+        cropped_sequences = processed_S[:]
+        flanks = processed_F[:]
     print("Fasta sequences are prepared for MHCflurry!")
-    return cropped_sequences,flanks
+    return cropped_sequences, flanks
