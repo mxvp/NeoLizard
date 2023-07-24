@@ -58,6 +58,7 @@ Examples:
     --annovar_coding_change 
     --annovar_coding_change_commands "annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate"
     --mhcflurry
+    --mhcflurry_lengths 9
 
 GUI:
 ----

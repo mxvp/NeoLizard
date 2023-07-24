@@ -141,6 +141,8 @@ def main():
 def execute_cli(args):
     output = ""
 
+    os.makedirs(args["output"], exist_ok=True) # Create output folder if it doesn't exist
+
     if args["qc"]:
         # Capture the printed output and return value for QC function
         with capture_output() as out:

@@ -2,6 +2,7 @@ data
 notebooks
 .DS_Store
 testing_area/
+testing_area2/
 reports
 todo.txt
 __pycache__

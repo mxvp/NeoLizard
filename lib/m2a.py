@@ -55,6 +55,14 @@ def maf_2_avinput(file, output_dir):
             else:
                 var_allele = pairs["col_t1"]
 
+            # An insertion resulting in frameshift uses different conventions in ANNOVAR --> start and end must be the same (pos left of insertion)
+            if (
+                items[pairs["col_start"]] < items[pairs["col_end"]]
+                and items[pairs["col_t1"]] == "-"
+                and items[pairs["col_t2"]] != "-"
+            ):
+                items[pairs["col_end"]] = items[pairs["col_start"]]
+
             annovar_line = "\t".join(
                 [
                     items[pairs["col_chrom"]],
