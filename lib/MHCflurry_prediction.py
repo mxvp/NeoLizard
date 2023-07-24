@@ -12,7 +12,7 @@ def create_peptides(sequences, flanks, lengths):
     peptides, N_flanks, C_flanks, sequence_names = [], [], [], []
     for count, value in enumerate(sequences):
         seq = value[1]
-        name = value[0].split()[1]
+        name = value[0]
         for l in lengths:
             for index in range(len(seq)):
                 if index + l <= len(seq):  # Check if slicing is possible
@@ -33,7 +33,7 @@ def perform_mhcflurry(output, sequences, flanks, lengths, add_flanks, alleles):
         predictions = predictor.predict(
             peptides=peptides, n_flanks=N_flanks, c_flanks=C_flanks, alleles=alleles
         )
-        predictions.insert(0, "sequence_name", sequence_names)
+        predictions.insert(0, "sequence_header", sequence_names)
         predictions.to_csv(outfile, index=False)
     else:
         # Create a list of alleles matching the number of sequences
@@ -41,7 +41,7 @@ def perform_mhcflurry(output, sequences, flanks, lengths, add_flanks, alleles):
             alleles = alleles * len(sequences)  # Replace with the desired allele
         else:
             alleles.extend(["HLA-A*31:01"] * (len(sequences) - len(alleles)))
-        sequences = {i[0].split()[1]: i[1] for i in sequences}
+        sequences = {i[0]: i[1] for i in sequences}
         predictor.predict_sequences(
             sequences, alleles=alleles, peptide_lengths=lengths
         ).to_csv(outfile, index=False)

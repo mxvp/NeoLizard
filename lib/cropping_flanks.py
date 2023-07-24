@@ -88,6 +88,8 @@ def process_fasta_file(input_file, flank_length):
         # For compatibility with MHCflurry --> remove last '*'
         sequence = sequence[:-1]
         cropped_sequence, flank = crop_sequence(sequence, pos, flank_length, length)
+        # Add filename to header for later identification of neopeptide origins
+        header = header + ' ' + os.path.basename(input_file)
         cropped_sequences.append((header, cropped_sequence))
         flanks.append(flank)
 
