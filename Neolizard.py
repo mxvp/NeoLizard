@@ -12,6 +12,7 @@ from lib.MHCflurry_prediction import perform_mhcflurry
 
 def main():
     args = parse_the_args()
+    os.makedirs(args.output, exist_ok=True) # Create output folder if it doesn't exist
     if args.qc:
         perform_qc(args.input, args.output)
     if args.cutadapt:

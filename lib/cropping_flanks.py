@@ -8,9 +8,22 @@ def parse_header(header):
     parts = header.split()
     mutation_info = list(filter(lambda x: x.startswith("p."), parts))[0][2:]
     mutation, pos = None, None
-    if "del" in mutation_info:
-        # In case of deletion: only position is needed where cleavage occurred
+    if "delins" in mutation_info:
+        # in case of confirmed del and ins
         pos = int(mutation_info.split("_")[0][1:])
+        length = len(mutation_info.split("delins")[1])
+        mutation = "indel"
+    elif "ins" in mutation_info:
+        # in case of insertion
+        pos = int(mutation_info.split("_")[0][1:])
+        length = len(mutation_info.split("ins")[1])
+        mutation = "ins"
+    elif "del" in mutation_info:
+        # In case of deletion: only position is needed where cleavage occurred
+        if '_' in mutation_info:
+            pos = int(mutation_info.split("_")[0][1:])
+        else:
+            pos = int(mutation_info[1:-3])
         mutation = "del"
         length = 0
     elif "fs*" in mutation_info:
