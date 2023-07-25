@@ -11,6 +11,7 @@ Configuration:
     perl ./annotate_variation.pl -buildver hg38 -downdb refGene humandb/;\
     perl ./annotate_variation.pl --buildver hg38 --downdb seq humandb/hg38_seq;\
     perl ./retrieve_seq_from_fasta.pl humandb/hg38_refGene.txt -seqdir humandb/hg38_seq -format refGene -outfile humandb/hg38_refGeneMrna.fa
+- MHCflurry handles extremely large fasta files poorly, be sure to handle them manually (20MB+)
 
 
 Depencencies are based on pipeline config:
