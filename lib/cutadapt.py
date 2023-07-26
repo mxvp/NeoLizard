@@ -1,6 +1,6 @@
 import os
-import subprocess
 import logging
+import shutil
 
 
 class CutadaptPipeline:
@@ -25,7 +25,9 @@ class CutadaptPipeline:
             logging.info(f"Starting trimming of {file[1]}")
             try:
                 outfile = os.path.join(processed_path, file[1])
-                self.command_runner.run(["cutadapt"] + commands + ["-o", outfile])
+                self.command_runner.run(
+                    ["cutadapt"] + commands + ["-o", outfile] + [file[0]]
+                )
                 processed_files += 1
                 logging.info(f"Finished trimming of {file[1]}")
             except Exception as e:
@@ -37,7 +39,7 @@ class CutadaptPipeline:
 
         if remove:
             try:
-                os.rmdir(self.path_handler.input_path)
+                shutil.rmtree(self.path_handler.input_path)
             except NotADirectoryError:
                 os.remove(self.path_handler.input_path)
 
