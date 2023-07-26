@@ -1,3 +1,5 @@
+import sys
+
 def print_lizard():
     art = r"""
                 __
@@ -18,7 +20,7 @@ def print_lizard():
                       |:/
           --.________,-_/
       """
-    return print(art)
+    return sys.stdout.write(art)
 
 
 # adapted from hjm

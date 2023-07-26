@@ -7,9 +7,10 @@ from lib.path_handler import PathHandler
 from lib.cmd_runner import CommandRunner
 from lib.qc import QCPipeline
 from lib.m2a import MAFtoAVInputConverter
-from lib.annovar import AnnovarPipeline
+from lib.annovar_functions import AnnovarPipeline
 from lib.cropping_flanks import CroppingFlanksPipeline
 from lib.MHCflurry_prediction import MHCflurryPipeline
+from lib.lizard import print_lizard
 
 def main():
     args = parse_the_args()  # Argparse
@@ -65,3 +66,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    print_lizard()
