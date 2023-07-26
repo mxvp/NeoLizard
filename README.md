@@ -36,6 +36,7 @@ Flags:
         --add_flanks: Generate peptides of given length(s) in sequence and test them --> can add flanks for improved accuracy
         --peptide_lengths: Enter length(s) of peptides to scan for.
         --alleles: Enter HLA alleles.
+    --cmd: Add custom commands. Make sure to add as a string!! e.g. " --cmd 'a_module -m 10 -q 20 -j 4' "
 
 Examples: 
 

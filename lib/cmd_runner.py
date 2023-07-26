@@ -31,8 +31,9 @@ class CommandRunner:
             logging.error(str(e))
 
     @ staticmethod 
-    def configure_command(self,input,output,cmds):
+    def configure_command(self,input,output,cmds:str):
         '''
         Configure command to be run following standard procedure.
         '''
+        cmds = [i for i in cmds.split(" ")]
         return [cmds[0],'--input',input,'--output',output] + cmds[1:]

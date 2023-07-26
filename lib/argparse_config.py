@@ -88,8 +88,8 @@ def parse_the_args():
     cmd_parser = parser.add_argument_group("cmd", "Custom command")
     cmd_parser.add_argument(
         "--cmd",
-        nargs=argparse.REMAINDER,
-        help="Custom command with multiple arguments.",
+        type=str,
+        help="Custom command with multiple arguments. Please enter as a string! e.g. 'a_module -m 10 -q 20 -j 4' ",
     )
 
 

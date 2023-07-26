@@ -11,6 +11,7 @@ from lib.annovar_functions import AnnovarPipeline
 from lib.cropping_flanks import CroppingFlanksPipeline
 from lib.MHCflurry_prediction import MHCflurryPipeline
 from lib.lizard import print_lizard
+from lib.cutadapt import CutadaptPipeline
 
 def main():
     args = parse_the_args()  # Argparse
@@ -31,6 +32,10 @@ def main():
             # perform qc here
             qc_pipeline = QCPipeline(pathing, command_runner)
             qc_pipeline.run_pipeline()
+
+        if arg == "cutadapt" and value == True:
+            cutadapt_pipeline = CutadaptPipeline(pathing,command_runner)
+            cutadapt_pipeline.run_cutadapt_pipeline(args.cutadapt_commands,args.cutadapt_remove)
 
         if arg == "cmd" and value != None:
             output_folder = pathing.output_subfolder(value[0][0])
