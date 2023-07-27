@@ -60,6 +60,22 @@ def parse_the_args():
         help='Enter commands for annovar, excluding input and output, as string e.g. "annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate"',
     )
 
+    HLA_parser = parser.add_argument_group("HLA", "HLA")
+    HLA_parser.add_argument(
+        "--HLA_TCGA", action="store_true", help="Use TCGA source for HLA alleles."
+    )
+    HLA_parser.add_argument(
+        "--HLA_TCGA_custom",
+        type=str,
+        default=None,
+        help='Enter custom path to TCGA HLA alleles text file.'
+    )
+    HLA_parser.add_argument(
+        "--HLA_typing",
+        action='store_true',
+        help='Perform HLA typing on samples.'
+    )
+
     mhcflurry_parser = parser.add_argument_group("mhcflurry", "MHCflurry")
     mhcflurry_parser.add_argument(
         "--mhcflurry", action="store_true", help="Perform mhcflurry"
@@ -76,13 +92,7 @@ def parse_the_args():
         nargs="+",
         help="Enter length(s) of peptides to scan for.",
     )
-    mhcflurry_parser.add_argument(
-        "--alleles",
-        type=str,
-        nargs="+",
-        default=["HLA-A*31:01"],
-        help="Enter the HLA alleles.",
-    )
+
     
     # Add the "--cmd" command with multiple arguments
     cmd_parser = parser.add_argument_group("cmd", "Custom command")

@@ -18,6 +18,7 @@ def main():
     os.makedirs(args.output, exist_ok=True)
     logfile = os.path.join(args.output, "NeoLizard.log")
     configure_logger(logfile)  # Configure the root logger
+    configure_lib_logger(logfile)
 
     pathing = PathHandler(args.input, args.output)
 

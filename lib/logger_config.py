@@ -16,7 +16,6 @@ def configure_logger(logfile):
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
 
     # Create a file handler
     file_handler = logging.FileHandler(logfile,mode='a')  
@@ -24,13 +23,14 @@ def configure_logger(logfile):
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-def configure_lib_logger():
+def configure_lib_logger(logfile):
     '''
     Logger for lib module.
     '''
     logger = logging.getLogger('lib')
     logger.setLevel(logging.DEBUG)
+    # Set the formatter to the same as the root logger
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
-    handler = logging.StreamHandler()
+    handler = logging.FileHandler(logfile, mode='a')  # Use the same file handler as the root logger
     handler.setFormatter(formatter)
     logger.addHandler(handler)
