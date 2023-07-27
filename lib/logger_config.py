@@ -10,12 +10,13 @@ def configure_logger(logfile):
     logger.setLevel(logging.DEBUG)
 
     # Create a formatter
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s:%(name)s] %(message)s')
 
     # Create a console handler
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(logging.DEBUG)
     console_handler.setFormatter(formatter)
+
 
     # Create a file handler
     file_handler = logging.FileHandler(logfile,mode='a')  
@@ -29,8 +30,13 @@ def configure_lib_logger(logfile):
     '''
     logger = logging.getLogger('lib')
     logger.setLevel(logging.DEBUG)
-    # Set the formatter to the same as the root logger
-    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
-    handler = logging.FileHandler(logfile, mode='a')  # Use the same file handler as the root logger
+
+    # Create a formatter with the package name
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s:%(name)s] %(message)s')
+
+    # Create a file handler
+    handler = logging.FileHandler(logfile, mode='a')
+    handler.setLevel(logging.DEBUG)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+

@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-## Some of the MAF input lines have missing tabs, this doesn't seem to be a problem in avinput format for ANNOVAR so they are retained.
-
 import os
 import logging
 
 
+## Some of the MAF input lines have missing tabs, this doesn't seem to be a problem in avinput format for ANNOVAR so they are retained.
 
 class MAFtoAVInputConverter:
 
@@ -84,6 +83,7 @@ class MAFtoAVInputConverter:
         except Exception as e:
             error_message = f"Error occurred while converting {file[1]} to AVINPUT: {str(e)}"
             logging.error(error_message)
+            raise
 
     def run_pipeline(self):
         converted_files=[]
@@ -96,8 +96,7 @@ class MAFtoAVInputConverter:
                 converted_files.append(file[1][:-4] + ".avinput")
                 logging.info("Conversion completed for file: %s", file[1])
             except Exception as e:
-                logging.error("Error occurred while converting %s to AVINPUT", file[1])
-                logging.error(str(e))
+                continue
 
         # Remove any incomplete files after the loop
         for file in os.listdir(output_dir):
@@ -112,3 +111,7 @@ class MAFtoAVInputConverter:
             f"MAF to AVINPUT conversion completed for {len(os.listdir(output_dir))} out of {len(file_list)} files."
         )
         self.path_handler.update_input(output_dir)
+
+
+class MafExtraction:
+    pass

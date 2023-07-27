@@ -6,7 +6,7 @@ from lib.argparse_config import parse_the_args
 from lib.path_handler import PathHandler
 from lib.cmd_runner import CommandRunner
 from lib.qc import QCPipeline
-from lib.m2a import MAFtoAVInputConverter
+from lib.maf import MAFtoAVInputConverter
 from lib.annovar_functions import AnnovarPipeline
 from lib.cropping_flanks import CroppingFlanksPipeline
 from lib.MHCflurry_prediction import MHCflurryPipeline
