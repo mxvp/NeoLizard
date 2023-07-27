@@ -2,11 +2,14 @@ import subprocess
 import logging
 
 class CommandRunner:
+    '''
+    Acts as a template for running commands in a subprocess.
+    '''
     def __init__(self):
         pass
 
 
-    def run(self, command):
+    def run(self, command:list):
         '''
         Run command using subprocess, will log everything.
         '''
@@ -31,9 +34,9 @@ class CommandRunner:
             logging.error(str(e))
 
     @ staticmethod 
-    def configure_command(self,input,output,cmds:str):
+    def configure_command(self,input:str,output:str,cmds:str):
         '''
-        Configure command to be run following standard procedure.
+        Configure command to standard format.
         '''
         cmds = [i for i in cmds.split(" ")]
         return [cmds[0],'--input',input,'--output',output] + cmds[1:]

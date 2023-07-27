@@ -1,15 +1,19 @@
 # Have to use prefixes for subarguments, namespace conflicts will happen even if using groups
-# change args.input in main() after every operation to location necessary for next
 
-# By default, argparse will assume that any argument that starts with a hyphen (-) is an option or flag, and any argument that doesn't start with a hyphen is a positional argument. This means that as long as the arguments provided after the positional argument(s) don't start with a hyphen, argparse will interpret them as values for that positional argument.
-# nargs: multiple values are passed (added to list), "" hyphens work to capture as one value
+# By default, argparse will assume that any argument that starts with a hyphen (-) is an option or flag,
+# and any argument that doesn't start with a hyphen is a positional argument.
+# This means that as long as the arguments provided after the positional argument(s) don't start with a hyphen,
+# argparse will interpret them as values for that positional argument.
+# --> we use strings when passing commands that need to be performed in a subprocess. The script will correctly turn them into lists.
 
 import os
 import argparse
 
 
 def parse_the_args():
-    # main arguments that work with only --input
+    """
+    Full argument parsing config, this is imported in main().
+    """
     parser = argparse.ArgumentParser(
         description="Custom pipeline for neoantigen prediction on NGS samples or TCGA MAF files.",
         prog="NeoLizard",
@@ -26,7 +30,6 @@ def parse_the_args():
     parser.add_argument("--qc", action="store_true", help="perform QC")
     parser.add_argument("--m2a", action="store_true", help="Convert MAF to AVINPUT")
 
-    # argument groups
     cutadapt_parser = parser.add_argument_group("cutadapt", "Cutadapt")
     cutadapt_parser.add_argument(
         "--cutadapt", action="store_true", help="Perform cutadapt"
@@ -68,12 +71,10 @@ def parse_the_args():
         "--HLA_TCGA_custom",
         type=str,
         default=None,
-        help='Enter custom path to TCGA HLA alleles text file.'
+        help="Enter custom path to TCGA HLA alleles text file.",
     )
     HLA_parser.add_argument(
-        "--HLA_typing",
-        action='store_true',
-        help='Perform HLA typing on samples.'
+        "--HLA_typing", action="store_true", help="Perform HLA typing on samples."
     )
 
     mhcflurry_parser = parser.add_argument_group("mhcflurry", "MHCflurry")
@@ -93,18 +94,12 @@ def parse_the_args():
         help="Enter length(s) of peptides to scan for.",
     )
 
-    
-    # Add the "--cmd" command with multiple arguments
     cmd_parser = parser.add_argument_group("cmd", "Custom command")
     cmd_parser.add_argument(
         "--cmd",
         type=str,
         help="Custom command with multiple arguments. Please enter as a string! e.g. 'a_module -m 10 -q 20 -j 4' ",
     )
-
-
-    # Example nargs
-    ### parser.add_argument('--command', nargs='+', help='Command argument')
 
     # Parse the arguments
     args = parser.parse_args()

@@ -1,6 +1,6 @@
 import logging
 
-def configure_logger(logfile):
+def configure_logger(logfile:str):
     '''
     Root logger.
     '''
@@ -24,7 +24,7 @@ def configure_logger(logfile):
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-def configure_lib_logger(logfile):
+def configure_lib_logger(logfile:str):
     '''
     Logger for lib module.
     '''

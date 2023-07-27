@@ -7,11 +7,13 @@ import logging
 ## Some of the MAF input lines have missing tabs, this doesn't seem to be a problem in avinput format for ANNOVAR so they are retained.
 
 class MAFtoAVInputConverter:
-
+    '''
+    Pipeline for converting MAF files to AVInput (format for annovar)
+    '''
     def __init__(self, path_handler):
         self.path_handler = path_handler
     
-    def get_indices(self, head):
+    def get_indices(self, head:list):
         cols = [
             "Chromosome",
             "Start_Position",
@@ -27,7 +29,10 @@ class MAFtoAVInputConverter:
             indices = []
         return indices
 
-    def maf_2_avinput(self, file, output_dir):
+    def maf_2_avinput(self, file:str, output_dir:str):
+        '''
+        Conversion function
+        '''
         outfile_path = os.path.join(output_dir, file[1][:-4] + ".avinput")
 
         try:
@@ -86,6 +91,9 @@ class MAFtoAVInputConverter:
             raise
 
     def run_pipeline(self):
+        '''
+        Function that runs the conversion pipeline
+        '''
         converted_files=[]
         file_list = self.path_handler.file_list(self.path_handler.input_path)
         output_dir = self.path_handler.output_subfolder("avinput_files")
@@ -111,7 +119,3 @@ class MAFtoAVInputConverter:
             f"MAF to AVINPUT conversion completed for {len(os.listdir(output_dir))} out of {len(file_list)} files."
         )
         self.path_handler.update_input(output_dir)
-
-
-class MafExtraction:
-    pass

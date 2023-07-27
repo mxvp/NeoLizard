@@ -1,7 +1,11 @@
-from mhcflurry import Class1AffinityPredictor
-from mhcflurry import Class1PresentationPredictor
 import os
 import logging
+
+try:
+    from mhcflurry import Class1AffinityPredictor, Class1PresentationPredictor
+except ImportError:
+    logging.error("mhcflurry package not found. Please make sure it is installed.")
+    raise
 
 # 2 ways of doing this:
 ## 1) scan the sequence for peptides of given length(s) with good binding affinity --> no option to add flanks for improved accuracy
@@ -10,11 +14,17 @@ import logging
 
 
 class MHCflurryPipeline:
-    def __init__(self,path_handler):
-        self.path_handler=path_handler
+    """
+    Pipeline for running MHCflurry on sequences (and flanks) for MHC-binding affinity prediction.
+    """
 
+    def __init__(self, path_handler):
+        self.path_handler = path_handler
 
-    def create_peptides(self, sequences, flanks, lengths):
+    def create_peptides(self, sequences: list, flanks: list, lengths: list):
+        """
+        Creates peptides and flanks as a better way of doing a scan for peptides.
+        """
         peptides, N_flanks, C_flanks, sequence_names = [], [], [], []
         for count, value in enumerate(sequences):
             seq = value[1]
@@ -28,37 +38,52 @@ class MHCflurryPipeline:
                         sequence_names.append(name)
         return peptides, N_flanks, C_flanks, sequence_names
 
+    def run_mhcflurry_pipeline(
+        self,
+        sequences: list,
+        flanks: list,
+        lengths: list,
+        add_flanks: bool,
+        alleles: list,
+    ):
+        """
+        Runs the MHCflurry pipeline.
+        """
+        try:
+            logging.info("Running MHCflurry pipeline...")
+            predictor = Class1PresentationPredictor.load()
 
-    def run_mhcflurry_pipeline(self, sequences, flanks, lengths, add_flanks, alleles):
-        logging.info("Running MHCflurry pipeline...")
-        predictor = Class1PresentationPredictor.load()
+            outfile = os.path.join(self.path_handler.output_path, "predictions.csv")
 
-        outfile = os.path.join(self.path_handler.output_path, "predictions.csv")
-
-        if add_flanks:
-            peptides, N_flanks, C_flanks, sequence_names = self.create_peptides(
-                sequences, flanks, lengths
-            )
-            predictions = predictor.predict(
-                peptides=peptides, n_flanks=N_flanks, c_flanks=C_flanks, alleles=alleles
-            )
-            predictions.insert(0, "sequence_header", sequence_names)
-            predictions.to_csv(outfile, index=False)
-        else:
-            # Create a list of alleles matching the number of sequences
-            if len(alleles) == 1:
-                alleles = alleles * len(sequences)  # Replace with the desired allele
+            if add_flanks:  # Decides if method 1 or 2
+                peptides, N_flanks, C_flanks, sequence_names = self.create_peptides(
+                    sequences, flanks, lengths
+                )
+                predictions = predictor.predict(
+                    peptides=peptides,
+                    n_flanks=N_flanks,
+                    c_flanks=C_flanks,
+                    alleles=alleles,
+                )
+                predictions.insert(0, "sequence_header", sequence_names)
+                predictions.to_csv(outfile, index=False)
             else:
-                alleles.extend(["HLA-A*31:01"] * (len(sequences) - len(alleles)))
-            sequences = {i[0]: i[1] for i in sequences}
-            predictor.predict_sequences(
-                sequences, alleles=alleles, peptide_lengths=lengths
-            ).to_csv(outfile, index=False)
+                # Create a list of alleles matching the number of sequences
+                if len(alleles) == 1:
+                    alleles = alleles * len(
+                        sequences
+                    )  # Replace with the desired allele
+                else:
+                    alleles.extend(["HLA-A*31:01"] * (len(sequences) - len(alleles)))
+                sequences = {i[0]: i[1] for i in sequences}
+                predictor.predict_sequences(
+                    sequences, alleles=alleles, peptide_lengths=lengths
+                ).to_csv(outfile, index=False)
 
-        self.path_handler.update_input(outfile)
-
-        logging.info("Predictions completed.")
-
+            self.path_handler.update_input(outfile)
+            logging.info("Predictions completed.")
+        except Exception as e:
+            logging.exception(f"An error occurred: {str(e)}")
 
     # The binding affinity predictions are given as affinities (KD) in nM in the mhcflurry_affinity column. Lower values indicate stronger binders. A commonly-used threshold for peptides with a reasonable chance of being immunogenic is 500 nM.
     # The mhcflurry_affinity_percentile gives the percentile of the affinity prediction among a large number of random peptides tested on that allele (range 0 - 100). Lower is stronger. Two percent is a commonly-used threshold.

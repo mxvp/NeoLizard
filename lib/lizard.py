@@ -1,6 +1,9 @@
 import sys
 
 def print_lizard():
+    '''
+    Prints a lizard.
+    '''
     art = r"""
                 __
                /..\  

@@ -3,6 +3,9 @@ import logging
 import sys
 
 class PathHandler:
+    '''
+    Class for handling the general dir paths.
+    '''
     def __init__(self, input_path, output_path):
         '''
         Input and output paths will be initiated as absolute paths.
@@ -42,7 +45,10 @@ class PathHandler:
         elif os.path.isfile(path):
             return [(path, os.path.basename(path))]
     
-    def update_input(self,path):
+    def update_input(self,path:str):
+        '''
+        Update the general input path.
+        '''
         if not os.path.exists(path):
             logging.error(f"The specified input file/folder '{path}' does not exist. Aborting!")
             sys.exit(1)
@@ -50,9 +56,15 @@ class PathHandler:
         self.input_path = os.path.abspath(path)
 
     def reset_input(self):
+        '''
+        Reset the general input path.
+        '''
         self.input_path = self.main_input_path
     
-    def update_output(self,path):
+    def update_output(self,path:str):
+        '''
+        Update the general output path.
+        '''
         if not os.path.exists(path):
             logging.error(f"The specified input file/folder '{path}' does not exist. Aborting!")
             sys.exit(1)
@@ -60,9 +72,15 @@ class PathHandler:
         self.output_path = os.path.abspath(path)
     
     def reset_output(self):
+        '''
+        Reset the general output path.
+        '''
         self.output_path = self.main_output_path
 
-    def validate_input_paths(self):
+    def validate_paths(self)->bool:
+        '''
+        Validate the general input and output path.
+        '''
         if not os.path.exists(self.input_path):
             logging.error(f"The specified input file/folder '{self.input_path}' does not exist.")
             return False

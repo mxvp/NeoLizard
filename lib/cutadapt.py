@@ -4,6 +4,9 @@ import shutil
 
 
 class CutadaptPipeline:
+    '''
+    Pipeline for performing Cutadapt on fastq files.
+    '''
     def __init__(
         self,
         path_handler,
@@ -12,7 +15,10 @@ class CutadaptPipeline:
         self.path_handler = path_handler
         self.command_runner = command_runner
 
-    def run_cutadapt_pipeline(self, commands, remove):
+    def run_cutadapt_pipeline(self, commands, remove:bool):
+        '''
+        Runs the pipeline by using the command_runner for launching a subprocess.
+        '''
         processed_files = 0
         commands = [i for i in commands.split(" ")]
         processed_path = self.path_handler.output_subfolder("processed")

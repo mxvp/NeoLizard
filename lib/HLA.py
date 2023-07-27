@@ -5,11 +5,17 @@ import pkg_resources
 
 
 class HLAPipeline:
+    '''
+    Pipeline for processing HLA types from the PanCancer tsv file and performing HLA-typing on raw data.
+    '''
     def __init__(self, path_handler, command_runner):
         self.path_handler = path_handler
         self.command_runner = command_runner
 
-    def process_TCGA_HLA(self, custom_source=None):
+    def process_TCGA_HLA(self, custom_source=None)->dict:
+        '''
+        Function for reading the PanCancer tsv file and storing all MHC alleles per classifier in a dict.
+        '''
         if custom_source != None:
             if not os.path.isfile(custom_source):
                 error_message = f"Custom source file not found: {custom_source}"
