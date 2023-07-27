@@ -37,3 +37,5 @@ class CommandRunner:
         '''
         cmds = [i for i in cmds.split(" ")]
         return [cmds[0],'--input',input,'--output',output] + cmds[1:]
+    
+    
