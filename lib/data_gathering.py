@@ -16,10 +16,11 @@ class PipelineData:
 
     def __init__(self, path_handler):
         self.path_handler = path_handler
-        self.sample_alleles = None
-        self.sample_allele_IDs = None
-        self.sample_mutations = None
-        self.mutation_transcripts = None
+        self.sample_alleles = None # dict: {filename:[HLA_allele1, HLA_allele2,...], filename2:[HLA_allele1_1, HLA_allele2_2,...],...}
+        self.sample_allele_IDs = None # dict: {filename: HLA_TCGA_ID, filename2: HLA_TCGA_ID2,...}
+        self.sample_mutations = None # dict: {filename: [line1,line2,line3,...], filename2: [line1_1,line2_2,line3_3,...],...}
+        self.mutation_transcripts = None # dict: {filename_lineX: [NM...,NM...,NM...], filename_lineX2: [NM...,NM...,NM...],...}
+        self.transcripts_alleles = None # dict: {filename_lineX_NM: [HLA_allele1, HLA_allele2,...], filename_lineX_NM2: [HLA_allele1, HLA_allele2,...],...}
 
         self.data = data = {
             "samples": [],
@@ -28,25 +29,8 @@ class PipelineData:
             "transcripts": [],
             "peptide": [],
         }
-
-    def link_samples_to_mutation_from_avinput(self):
-        sample_mutations = {}
-        file_list = self.path_handler.file_list(
-            self.path_handler.input_path
-        )  # read in .avinput files
-        for file in file_list:
-            try:
-                with open(file) as f:
-                    lines = f.readlines()
-                    sample = os.path.basename(file).split(".")[0]
-                    for i in len(lines):
-                        sample_mutations[sample] = "line" + str(i + 1)
-            except Exception as e:
-                logging.error(e)
-        self.sample_mutations = sample_mutations
-        return sample_mutations
-
-    def link_HLA_ID_TCGA_to_MAF_samples(self, HLA_dict: dict):
+    
+    def link_HLA_ID_TCGA_to_MAF_samples(self):
         sample_allele_IDs = {}
         file_list = self.path_handler.file_list(
             self.path_handler.input_path
@@ -54,7 +38,7 @@ class PipelineData:
         for file in file_list:
             try:
                 # Read the data from the file
-                with open(file) as f:
+                with open(file[0]) as f:
                     lines = f.readlines()
                     # Remove lines starting with "#" and split the remaining lines into columns
                     data_lines = [
@@ -69,29 +53,51 @@ class PipelineData:
                     # Create a DataFrame from the data lines
                     df = pd.DataFrame(data_lines[1:], columns=header)
                     allele = df.loc[0, "Tumor_Sample_Barcode"]
-                    sample = os.path.basename(file).split(".")[0]
+                    sample = file[1].split(".")[0]
                     sample_allele_IDs[sample] = allele
             except Exception as e:
-                logging.error(e)
+                logging.error(f"{e} in link_HLA_ID_TCGA_to_MAF_samples")
         self.sample_allele_IDs = sample_allele_IDs
 
-    def link_HLA_TCGA_to_samples(self, sample_allele_IDs: dict, HLA_dict: dict):
+
+    def link_HLA_TCGA_to_samples(self,  HLA_dict: dict):
         sample_alleles = {}
         try:
-            for sample, allele_ID in sample_allele_IDs.items():
-                sample_alleles[sample] = HLA_dict[allele_ID]
+            for sample, allele_ID in self.sample_allele_IDs.items():
+                try:
+                    sample_alleles[sample] = HLA_dict[allele_ID[:16]] # :16 because the TCGA file reports first 16 chars
+                except:
+                    logging.info(f"TCGA alleles not found for {sample},defaulting to ['HLA-A*31:01']")
+                    sample_alleles[sample] = ['HLA-A*31:01']
         except Exception as e:
-            logging.error(e)
+                logging.error(f"{e} in link_HLA_TCGA_to_samples")
         self.sample_alleles = sample_alleles
-        return sample_alleles
+
+    def link_samples_to_mutation_from_avinput(self):
+        sample_mutations = {}
+        file_list = self.path_handler.file_list(
+            self.path_handler.input_path
+        )  # read in .avinput files
+        for file in file_list:
+            try:
+                with open(file[0]) as f:
+                    lines = f.readlines()
+                    sample = file[1].split(".")[0]
+                    sample_mutations[sample] = []
+                    for i in range(len(lines)):
+                        sample_mutations[sample].append("line" + str(i + 1))
+            except Exception as e:
+                logging.error(f"{e} in link_samples_to_mutation_from_avinput")
+        self.sample_mutations = sample_mutations
+
     
     def link_mutation_to_transcripts(self):
         mutation_transcripts = {}
         file_list = self.path_handler.file_list(self.path_handler.input_path)
         for file in file_list:
             try:
-                with open(file,'r') as f:
-                    sample = os.path.basename(file).split(".")[0]
+                with open(file[0],'r') as f:
+                    sample = file[1].split(".")[0]
                     for line in f:
                         if line.startswith(">"):
                             line = line[1:].split(' ')
@@ -102,8 +108,12 @@ class PipelineData:
                             if transcript not in mutation_transcripts[sample+'_'+lineX]:
                                 mutation_transcripts[sample+'_'+lineX].append(transcript)
             except Exception as e:
-                logging.error(e)
+                logging.error(f"{e} in link_mutation_to_transcripts")
         self.mutation_transcripts = mutation_transcripts
 
+    def link_HLA_TCGA_to_transcripts(self):
+        pass
+
             
+
 

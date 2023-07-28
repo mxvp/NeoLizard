@@ -89,7 +89,8 @@ class CroppingFlanksPipeline:
 
     def process_fasta_file(self, input_file: str, flank_length: int):
         """
-        Function that processes the tumor fasta files and splits the headers from the sequences.
+        Function that processes the tumor fasta files and configures the headers from the sequences.
+        Note: headers are in the form of filename_mutation(lineX)_transcript(NM...) for later identification
         """
         try:
             sequences = []
@@ -120,8 +121,9 @@ class CroppingFlanksPipeline:
                 cropped_sequence, flank = self.crop_sequence(
                     sequence, pos, flank_length, length
                 )
-                # Add filename to header for later identification of neopeptide origins
-                header = header + " " + os.path.basename(input_file)
+                # !!!! configure "header" to be filename_mutation(lineX)_transcript(NM...) 
+                # --> necessary for identifying in/after MHCflurry
+                header = os.path.basename(input_file).split('.')[0]+'_'+header.split(' ')[0][1:]+'_'+header.split(' ')[1]
 
                 # To avoid duplicates
                 if (header, cropped_sequence) not in cropped_sequences and flank not in flanks:
@@ -138,6 +140,7 @@ class CroppingFlanksPipeline:
     def cropping_flanks_pipeline_run(self, flank_length: int):
         """
         Function that runs all above functions to create the fasta cropping pipeline.
+        Note: headers are in the form of filename_mutation(lineX)_transcript(NM...) for later identification
         """
         cropped_sequences = []
         flanks = []
