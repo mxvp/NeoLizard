@@ -111,22 +111,36 @@ class CroppingFlanksPipeline:
 
                 if current_sequence != "":
                     sequences.append((current_header, current_sequence))
-
+            # Linex_dupes will keep track of which transcripts have already passed, sometimes there are multiple transcripts(NM...) per mutation(lineX),
+            # originating from multiple submissions in NCBI.
+            # They should be regarded as equal and skipped.
+            lineX_dupes = []
             for header, sequence in sequences:
-                if "WILDTYPE" in header:
+                lineX = header.split(" ")[0][1:]
+                if "WILDTYPE" in header or lineX in lineX_dupes:
                     continue
+                lineX_dupes.append(lineX)
                 mutation, pos, length = self.parse_header(header)
                 # For compatibility with MHCflurry --> remove last '*'
                 sequence = sequence[:-1]
                 cropped_sequence, flank = self.crop_sequence(
                     sequence, pos, flank_length, length
                 )
-                # !!!! configure "header" to be filename_mutation(lineX)_transcript(NM...) 
+                # !!!! configure "header" to be filename_mutation(lineX)_transcript(NM...)
                 # --> necessary for identifying in/after MHCflurry
-                header = os.path.basename(input_file).split('.')[0]+'_'+header.split(' ')[0][1:]+'_'+header.split(' ')[1]
+                header = (
+                    os.path.basename(input_file).split(".")[0]
+                    + "_"
+                    + header.split(" ")[0][1:]
+                    + "_"
+                    + header.split(" ")[1]
+                )
 
                 # To avoid duplicates
-                if (header, cropped_sequence) not in cropped_sequences and flank not in flanks:
+                if (
+                    header,
+                    cropped_sequence,
+                ) not in cropped_sequences and flank not in flanks:
                     cropped_sequences.append((header, cropped_sequence))
                     flanks.append(flank)
 
