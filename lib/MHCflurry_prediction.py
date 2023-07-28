@@ -21,7 +21,7 @@ class MHCflurryPipeline:
     def __init__(self, path_handler):
         self.path_handler = path_handler
 
-    def create_peptides(self, sequences: list, flanks: list, lengths: list, transcript_alleles):
+    def create_peptides(self, sequences: list, flanks: list, lengths: list, input_alleles):
         """
         Creates peptides and flanks as a better way of doing a scan for peptides.
         """
@@ -36,7 +36,10 @@ class MHCflurryPipeline:
                         N_flanks.append(flanks[count][0] + seq[:index])
                         C_flanks.append(seq[index:] + flanks[count][1])
                         sequence_names.append(name)
-                        alleles.append(transcript_alleles[seq[0]])
+                        if isinstance(input_alleles,dict):
+                            alleles.append(input_alleles[seq[0]])
+                        else:
+                            alleles.append[input_alleles]
         return peptides, N_flanks, C_flanks, sequence_names, alleles
 
     def run_mhcflurry_pipeline(
@@ -45,7 +48,7 @@ class MHCflurryPipeline:
         flanks: list,
         lengths: list,
         add_flanks: bool,
-        transcript_alleles: dict,
+        input_alleles,
     ):
         """
         Runs the MHCflurry pipeline.
@@ -58,7 +61,7 @@ class MHCflurryPipeline:
 
             if add_flanks:  # Decides if method 1 or 2
                 peptides, N_flanks, C_flanks, sequence_names, alleles = self.create_peptides(
-                    sequences, flanks, lengths, transcript_alleles
+                    sequences, flanks, lengths, input_alleles
                 )
                 predictions = predictor.predict(
                     peptides=peptides,
@@ -69,7 +72,10 @@ class MHCflurryPipeline:
                 predictions.insert(0, "sequence_header", sequence_names)
                 predictions.to_csv(outfile, index=False)
             else:
-                alleles = [transcript_alleles[i[0]] for i in sequences]
+                if isinstance(input_alleles,dict): # Check if TCGA alleles were given
+                    alleles = [input_alleles[i[0]] for i in sequences]
+                else: # or custom alleles (list)
+                    alleles = input_alleles * len(sequences)
                 sequences = {i[0]: i[1] for i in sequences}
                 predictor.predict_sequences(
                     sequences, alleles=alleles, peptide_lengths=lengths

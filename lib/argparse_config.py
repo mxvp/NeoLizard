@@ -91,7 +91,19 @@ def parse_the_args():
         type=int,
         default=[8, 9, 10, 11],
         nargs="+",
-        help="Enter length(s) of peptides to scan for.",
+        help="Enter length(s) of peptides to scan for."
+    )
+    mhcflurry_parser.add_argument(
+        "--TCGA_alleles",
+        action='store_true',
+        help="Use TCGA PanCancer alleles."
+    )
+    mhcflurry_parser.add_argument(
+        "--custom_alleles",
+        type=str,
+        nargs="+",
+        default=["HLA-A*31:01"],
+        help="Enter the HLA alleles.",
     )
 
     cmd_parser = parser.add_argument_group("cmd", "Custom command")

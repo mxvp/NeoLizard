@@ -58,11 +58,12 @@ def main():
             args.cmd[0].pop(0)
 
         if arg == "m2a" and value == True:
-            # Gather HLA alleles from maf files
-            pipeline_data.link_HLA_ID_TCGA_to_MAF_samples()
-            # Temp custom source...
-            HLA_dict = HLA_pipeline.process_TCGA_HLA(custom_source='/Users/mvp/Documents/biolizard/Project/NeoLizard/resources/panCancer_hla.tsv')
-            pipeline_data.link_HLA_TCGA_to_samples(HLA_dict)
+            if args.TCGA_alleles:
+                # Gather HLA alleles from maf files
+                pipeline_data.link_HLA_ID_TCGA_to_MAF_samples()
+                # Temp custom source...
+                HLA_dict = HLA_pipeline.process_TCGA_HLA(custom_source='/Users/mvp/Documents/biolizard/Project/NeoLizard/resources/panCancer_hla.tsv')
+                pipeline_data.link_HLA_TCGA_to_samples(HLA_dict)
             # Perform MAF to AVInput conversion
             m2a_pipeline = MAFtoAVInputConverter(pathing)
             m2a_pipeline.run_pipeline()
@@ -89,7 +90,8 @@ def main():
             pipeline_data.link_mutation_to_transcripts()
 
             # Link transcripts to HLA_alleles
-            pipeline_data.link_transcript_to_TCGA_HLA_alleles()
+            if args.TCGA_alleles:
+                pipeline_data.link_transcript_to_TCGA_HLA_alleles()
 
         if arg =="mhcflurry" and value==True:
             # Perform MHCflurry binding affinity prediction. Add_flanks and alleles will be used in pipeline.
@@ -98,7 +100,12 @@ def main():
 
             flank_length = min(args.peptide_lengths) - 1
             sequences, flanks = cropping_flanks_pipeline.cropping_flanks_pipeline_run(flank_length)
-            mhcflurry_pipeline.run_mhcflurry_pipeline(sequences,flanks,args.peptide_lengths,args.add_flanks,pipeline_data.transcripts_alleles)
+
+            if args.TCGA_alleles:
+                alleles = pipeline_data.transcripts_alleles
+            else:
+                alleles = args.custom_alleles
+            mhcflurry_pipeline.run_mhcflurry_pipeline(sequences,flanks,args.peptide_lengths,args.add_flanks,alleles)
 
 
 if __name__ == "__main__":
