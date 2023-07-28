@@ -21,11 +21,11 @@ class MHCflurryPipeline:
     def __init__(self, path_handler):
         self.path_handler = path_handler
 
-    def create_peptides(self, sequences: list, flanks: list, lengths: list):
+    def create_peptides(self, sequences: list, flanks: list, lengths: list, transcript_alleles):
         """
         Creates peptides and flanks as a better way of doing a scan for peptides.
         """
-        peptides, N_flanks, C_flanks, sequence_names = [], [], [], []
+        peptides, N_flanks, C_flanks, sequence_names, alleles = [], [], [], [], []
         for count, value in enumerate(sequences):
             seq = value[1]
             name = value[0]
@@ -36,7 +36,8 @@ class MHCflurryPipeline:
                         N_flanks.append(flanks[count][0] + seq[:index])
                         C_flanks.append(seq[index:] + flanks[count][1])
                         sequence_names.append(name)
-        return peptides, N_flanks, C_flanks, sequence_names
+                        alleles.append(transcript_alleles[seq[0]])
+        return peptides, N_flanks, C_flanks, sequence_names, alleles
 
     def run_mhcflurry_pipeline(
         self,
@@ -44,7 +45,7 @@ class MHCflurryPipeline:
         flanks: list,
         lengths: list,
         add_flanks: bool,
-        alleles: list,
+        transcript_alleles: dict,
     ):
         """
         Runs the MHCflurry pipeline.
@@ -52,12 +53,12 @@ class MHCflurryPipeline:
         try:
             logging.info("Running MHCflurry pipeline...")
             predictor = Class1PresentationPredictor.load()
-
+            alleles=[]
             outfile = os.path.join(self.path_handler.output_path, "predictions.csv")
 
             if add_flanks:  # Decides if method 1 or 2
-                peptides, N_flanks, C_flanks, sequence_names = self.create_peptides(
-                    sequences, flanks, lengths
+                peptides, N_flanks, C_flanks, sequence_names, alleles = self.create_peptides(
+                    sequences, flanks, lengths, transcript_alleles
                 )
                 predictions = predictor.predict(
                     peptides=peptides,
@@ -68,13 +69,7 @@ class MHCflurryPipeline:
                 predictions.insert(0, "sequence_header", sequence_names)
                 predictions.to_csv(outfile, index=False)
             else:
-                # Create a list of alleles matching the number of sequences
-                if len(alleles) == 1:
-                    alleles = alleles * len(
-                        sequences
-                    )  # Replace with the desired allele
-                else:
-                    alleles.extend(["HLA-A*31:01"] * (len(sequences) - len(alleles)))
+                alleles = [transcript_alleles[i[0]] for i in sequences]
                 sequences = {i[0]: i[1] for i in sequences}
                 predictor.predict_sequences(
                     sequences, alleles=alleles, peptide_lengths=lengths
