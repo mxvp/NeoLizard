@@ -19,6 +19,7 @@ def main():
     '''
     Main function of the NeoLizard pipeline.
     Runs all requested steps.
+    author : max
     '''
     args = parse_the_args()  # Argparse
     os.makedirs(args.output, exist_ok=True)
