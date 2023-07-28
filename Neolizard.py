@@ -57,6 +57,8 @@ def main():
             m2a_pipeline = MAFtoAVInputConverter(pathing)
             m2a_pipeline.run_pipeline()
 
+            # Gather sample names and mutation names here (filename to "." and filename to ".  + lineX")
+
         if arg == "annovar_annotate_variation" and value == True:
             # Perform annovar_annotate
             annovar_pipeline = AnnovarPipeline(pathing, command_runner)

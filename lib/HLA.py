@@ -1,6 +1,5 @@
 import os
 import logging
-import subprocess
 import pkg_resources
 
 
