@@ -63,7 +63,7 @@ def main():
                 # Gather HLA alleles from maf files
                 pipeline_data.link_HLA_ID_TCGA_to_MAF_samples()
                 # Temp custom source...
-                HLA_dict = HLA_pipeline.process_TCGA_HLA(custom_source='/Users/mvp/Documents/biolizard/Project/NeoLizard/resources/panCancer_hla.tsv')
+                HLA_dict = HLA_pipeline.process_TCGA_HLA(custom_source='./resources/panCancer_hla.tsv')
                 pipeline_data.link_HLA_TCGA_to_samples(HLA_dict)
             # Perform MAF to AVInput conversion
             m2a_pipeline = MAFtoAVInputConverter(pathing)

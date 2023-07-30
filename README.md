@@ -11,6 +11,8 @@ Configuration:
     perl ./annotate_variation.pl -buildver hg38 -downdb refGene humandb/;\
     perl ./annotate_variation.pl --buildver hg38 --downdb seq humandb/hg38_seq;\
     perl ./retrieve_seq_from_fasta.pl humandb/hg38_refGene.txt -seqdir humandb/hg38_seq -format refGene -outfile humandb/hg38_refGeneMrna.fa
+- place annovar in NeoLizard dir or add annovar/data to path
+- mhcflurry-downloads fetch models_class1_presentation
 - MHCflurry handles extremely large fasta files poorly, be sure to handle them manually (20MB+)
 
 
@@ -60,7 +62,7 @@ Examples:
     --annovar_coding_change 
     --annovar_coding_change_commands "annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate"
     --mhcflurry
-    --mhcflurry_lengths 9
+    --TCGA_alleles
 
 GUI:
 ----
