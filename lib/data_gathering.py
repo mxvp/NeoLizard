@@ -24,13 +24,6 @@ class PipelineData:
         self.mutation_transcripts = None  # dict: {filename_lineX: [NM...,NM...,NM...], filename_lineX2: [NM...,NM...,NM...],...}
         self.transcripts_alleles = None  # dict: {filename_lineX_NM: [HLA_allele1, HLA_allele2,...], filename_lineX_NM2: [HLA_allele1, HLA_allele2,...],...}
 
-        self.data = data = {
-            "samples": [],
-            "alleles": [],
-            "mutations": [],
-            "transcripts": [],
-            "peptide": [],
-        }
 
     def link_HLA_ID_TCGA_to_MAF_samples(self):
         '''

@@ -1,6 +1,7 @@
 import psycopg2
 import logging
 import csv
+import uuid
 
 # Make sure the database name is LOWERCASE!!
 
@@ -27,7 +28,9 @@ class DatabaseOperations:
                 password=self.password,
                 host=self.host,
             )
-            conn.autocommit = True  # Set autocommit mode to create the database
+            conn.set_isolation_level(
+                psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
+            )  # Set autocommit mode to create the database
 
             # Create a cursor
             cur = conn.cursor()
@@ -67,7 +70,7 @@ class DatabaseOperations:
                 """
                 CREATE TABLE Sample (
                     sample_id SERIAL PRIMARY KEY,
-                    hla_allele VARCHAR(50)
+                    sample_name VARCHAR(255)
                 )
             """
             )
@@ -77,7 +80,8 @@ class DatabaseOperations:
                 """
                 CREATE TABLE Mutation (
                     mutation_id SERIAL PRIMARY KEY,
-                    sample_id INTEGER REFERENCES Sample(sample_id)
+                    sample_id INTEGER REFERENCES Sample(sample_id),
+                    mutation_name VARCHAR(255)
                 )
             """
             )
@@ -87,7 +91,8 @@ class DatabaseOperations:
                 """
                 CREATE TABLE Transcript (
                     transcript_id SERIAL PRIMARY KEY,
-                    mutation_id INTEGER REFERENCES Mutation(mutation_id)
+                    mutation_id INTEGER REFERENCES Mutation(mutation_id),
+                    transcript_name VARCHAR(255)
                 )
             """
             )
@@ -102,7 +107,6 @@ class DatabaseOperations:
                     peptide VARCHAR(255) NOT NULL,
                     n_flank VARCHAR(255),
                     c_flank VARCHAR(255),
-                    sample_name VARCHAR(255) NOT NULL,
                     affinity FLOAT NOT NULL,
                     best_allele FLOAT NOT NULL,
                     affinity_percentile FLOAT NOT NULL,
@@ -211,32 +215,50 @@ class DatabaseOperations:
             cur = conn.cursor()
 
             # Insert data into the Sample table
-            for sample_id, hla_alleles in self.pipeline_data.sample_alleles.items():
-                for hla_allele in hla_alleles:
-                    cur.execute(
-                        "INSERT INTO Sample (sample_id, hla_allele) VALUES (%s, %s)",
-                        (sample_id, hla_allele),
-                    )
+            for sample_name in list(self.pipeline_data.sample_mutations.keys()):
+                cur.execute(
+                    "INSERT INTO Sample (sample_name) VALUES (%s)",
+                    (sample_name,),
+                )
 
             # Insert data into the Mutation table
-            for sample_id, mutation_ids in self.pipeline_data.sample_mutations.items():
-                for mutation_id in mutation_ids:
-                    cur.execute(
-                        "INSERT INTO Mutation (sample_id, mutation_id) VALUES (%s, %s)",
-                        (sample_id, mutation_id),
-                    )
-
-            # Insert data into the Transcript table
             for (
-                mutation,
-                transcripts,
-            ) in self.pipeline_data.mutation_transcripts.items():
-                for transcript in transcripts:
-                    cur.execute(
-                        "INSERT INTO Transcript (mutation_id, transcript) VALUES (%s, %s)",
-                        (mutation, transcript),
-                    )
+                sample_name,
+                mutation_names,
+            ) in self.pipeline_data.sample_mutations.items():
+                cur.execute(
+                    "SELECT sample_id FROM Sample WHERE sample_name = %s",
+                    (sample_name,),
+                )
+                sample_id = cur.fetchone()
 
+                if sample_id is None:
+                    logging.error(
+                        f"Sample '{sample_name}' not found in the Sample table."
+                    )
+                    continue
+
+                sample_id = sample_id[0]
+
+                for mutation_name in mutation_names:
+                    cur.execute(
+                        "SELECT mutation_id FROM Mutation WHERE sample_id = %s AND mutation_name = %s",
+                        (sample_id, mutation_name),
+                    )
+                    mutation_id = cur.fetchone()
+
+                    if mutation_id is None:
+                        logging.error(
+                            f"Mutation '{mutation_name}' not found in the Mutation table for Sample '{sample_name}'."
+                        )
+                        continue
+
+                    mutation_id = mutation_id[0]
+
+                    cur.execute(
+                        "INSERT INTO Mutation (sample_id, mutation_name) VALUES (%s, %s)",
+                        (sample_id, mutation_name),
+                    )
             # Commit the changes
             conn.commit()
 
@@ -336,9 +358,9 @@ class DatabaseOperations:
 
     def add_prediction_results(
         self,
-        sample,
-        mutation,
-        transcript,
+        sample_name,
+        mutation_name,
+        transcript_name,
         pos,
         peptide,
         n_flank,
@@ -350,9 +372,6 @@ class DatabaseOperations:
         presentation_score,
         presentation_percentile,
     ):
-        """
-        Add peptide data to the Peptide table in the database.
-        """
         try:
             # Connect to the PostgreSQL server and database
             with psycopg2.connect(
@@ -365,7 +384,51 @@ class DatabaseOperations:
 
                 # Create a cursor
                 with conn.cursor() as cur:
-                    # Insert data into the Peptide table and return the peptide_id
+                    # Get the sample_id from the Sample table based on the sample_name
+                    cur.execute(
+                        "SELECT sample_id FROM Sample WHERE sample_name = %s",
+                        (sample_name,),
+                    )
+                    sample_id = cur.fetchone()
+
+                    if sample_id is None:
+                        # Sample with the provided sample_name does not exist
+                        logging.warning(
+                            f"Sample with name '{sample_name}' does not exist in the Sample table. Skipping peptide data insertion for {sample_name}_{mutation_name}_{transcript_name}."
+                        )
+                        return
+
+                    sample_id = sample_id[0]
+
+                    # Get the mutation_id from the Mutation table based on the mutation_name and sample_id
+                    cur.execute(
+                        "SELECT mutation_id FROM Mutation WHERE mutation_name = %s AND sample_id = %s",
+                        (mutation_name, sample_id),
+                    )
+                    mutation_id = cur.fetchone()
+
+                    if mutation_id is None:
+                        # Mutation with the provided mutation_name and sample_id does not exist
+                        logging.warning(
+                            f"Mutation with name '{mutation_name}' and sample_id '{sample_id}' does not exist in the Mutation table. Skipping peptide data insertion for {sample_name}_{mutation_name}_{transcript_name}."
+                        )
+                        return
+
+                    mutation_id = mutation_id[0]
+
+                    # Insert data into the Transcript table
+                    cur.execute(
+                        """
+                        INSERT INTO Transcript (
+                            mutation_id,
+                            transcript_name
+                        )
+                        VALUES (%s, %s)
+                        """,
+                        (mutation_id, transcript_name),
+                    )
+
+                    # Insert data into the Peptide table
                     cur.execute(
                         """
                         INSERT INTO Peptide (
@@ -374,7 +437,6 @@ class DatabaseOperations:
                             peptide,
                             n_flank,
                             c_flank,
-                            sample_name,
                             affinity,
                             best_allele,
                             affinity_percentile,
@@ -383,8 +445,7 @@ class DatabaseOperations:
                             presentation_percentile
                         )
                         VALUES (
-                            (SELECT transcript_id FROM Transcript WHERE mutation_id = %s AND transcript = %s),
-                            %s,
+                            LASTVAL(),
                             %s,
                             %s,
                             %s,
@@ -399,13 +460,10 @@ class DatabaseOperations:
                         RETURNING peptide_id
                     """,
                         (
-                            mutation,
-                            transcript,
                             pos,
                             peptide,
                             n_flank,
                             c_flank,
-                            sample,
                             affinity,
                             best_allele,
                             affinity_percentile,
@@ -417,9 +475,9 @@ class DatabaseOperations:
 
                     peptide_id = cur.fetchone()[0]
 
-            logging.info(
-                f"Peptide data (ID: {peptide_id}) for {sample}_{mutation}_{transcript} added to the database."
-            )
+                logging.info(
+                    f"Peptide data (ID: {peptide_id}) for {sample_name}_{mutation_name}_{transcript_name} added to the database."
+                )
         except (Exception, psycopg2.DatabaseError) as e:
             logging.error(f"Error adding peptide data to the database: {e}")
             raise

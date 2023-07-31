@@ -14,6 +14,7 @@ Configuration:
 - place annovar in NeoLizard dir or add annovar/data to path
 - mhcflurry-downloads fetch models_class1_presentation
 - MHCflurry handles extremely large fasta files poorly, be sure to handle them manually (20MB+)
+- Make sure PostgreSQL is installed
 
 
 Depencencies are based on pipeline config:
@@ -22,6 +23,7 @@ Depencencies are based on pipeline config:
     -CUTADAPT
     -FASTQC
     -MULTIQC
+    -PostgreSQL
 
 COMMAND LINE INTERFACE:
 -----------------------

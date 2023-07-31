@@ -119,10 +119,10 @@ def parse_the_args():
         action='store_true',
         help='Store results in database. Will be created if not available. Please fill in credentials using "--db-username" "--db-password" "--db-host" and "--db-name".'
     )
-    database_parser.add_argument("--db-username", type=str, help="Database username")
-    database_parser.add_argument("--db-password", type=str, help="Database password")
-    database_parser.add_argument("--db-host", type=str, help="Database host")
-    database_parser.add_argument("--db-name", type=str, help="Database name, lowercase!")
+    database_parser.add_argument("--db_username", type=str, default='postgres', help="Database username, default superuser is postgres")
+    database_parser.add_argument("--db_password", type=str, help="Database password")
+    database_parser.add_argument("--db_host", type=str, default= 'localhost', help="Database host")
+    database_parser.add_argument("--db_name", type=str, default='neolizard_db',help="Database name, lowercase!")
 
     # Parse the arguments
     args = parser.parse_args()
