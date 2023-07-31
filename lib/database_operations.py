@@ -114,4 +114,4 @@ class DatabaseOperations:
         """
         Add prediction data to the database.
         """
-        
+        pass

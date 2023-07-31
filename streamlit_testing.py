@@ -11,7 +11,7 @@ import streamlit as st
 import plotly.express as px
 
 # Load the CSV file
-file_path = "/home/mxvp/Documents/NeoLizard/testing_area/output2/predictions.csv"  # Replace with the actual path to your CSV file
+file_path = "/home/mxvp/Documents/NeoLizard/testing_area/output2/predictions.csv"  
 df = pd.read_csv(file_path)
 
 # Sidebar to select the columns to display

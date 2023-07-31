@@ -89,7 +89,7 @@ def parse_the_args():
     mhcflurry_parser.add_argument(
         "--peptide_lengths",
         type=int,
-        default=[8, 9, 10, 11],
+        default=[9],
         nargs="+",
         help="Enter length(s) of peptides to scan for."
     )
