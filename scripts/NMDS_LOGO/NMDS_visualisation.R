@@ -15,13 +15,14 @@ library(mclust)
 library(ggplot2)
 
 # Enter path of predictions csv file and substitution matrix (distPMBEC)
-predictions_path = './Predictions_deduped.csv'
-subst_matrix_path = './distPMBEC.txt'
+predictions_path = '/Users/mvp/Documents/biolizard/Project/NeoLizard/data/TCGA_prad/predictions.csv'
+subst_matrix_path = '/Users/mvp/Documents/biolizard/Project/NeoLizard/scripts/NMDS_LOGO/distPMBEC.txt'
 
-### Load  data
+### Load  data (here we are only using the best 0.015 percent --> 412 sequences)
 predictions<-read.csv(predictions_path)
-peps<-predictions[4]
-peps<-as.character(peps[,1])
+filtered_predictions <- subset(predictions, nchar(peptide) == 9)
+filtered_predictions <- subset(filtered_predictions, affinity_percentile < 0.015)
+peps<-as.character(filtered_predictions[3][,1])
 
 rndseed = 12311
 npeps <- length(peps)

@@ -83,6 +83,7 @@ class MHCflurryPipeline:
 
             self.path_handler.update_input(outfile)
             logging.info("Predictions completed.")
+            self.path_handler.update_input(outfile)
         except Exception as e:
             logging.exception(f"An error occurred: {str(e)}")
 

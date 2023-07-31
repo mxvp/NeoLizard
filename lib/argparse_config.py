@@ -122,7 +122,7 @@ def parse_the_args():
     database_parser.add_argument("--db-username", type=str, help="Database username")
     database_parser.add_argument("--db-password", type=str, help="Database password")
     database_parser.add_argument("--db-host", type=str, help="Database host")
-    database_parser.add_argument("--db-name", type=str, help="Database name")
+    database_parser.add_argument("--db-name", type=str, help="Database name, lowercase!")
 
     # Parse the arguments
     args = parser.parse_args()
