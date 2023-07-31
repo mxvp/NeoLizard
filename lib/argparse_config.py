@@ -113,6 +113,17 @@ def parse_the_args():
         help="Custom command with multiple arguments. Please enter as a string! e.g. 'a_module -m 10 -q 20 -j 4' ",
     )
 
+    database_parser = parser.add_argument_group("database", "Database")
+    database_parser.add_argument(
+        "--store_db",
+        action='store_true',
+        help='Store results in database. Will be created if not available. Please fill in credentials using "--db-username" "--db-password" "--db-host" and "--db-name".'
+    )
+    database_parser.add_argument("--db-username", type=str, help="Database username")
+    database_parser.add_argument("--db-password", type=str, help="Database password")
+    database_parser.add_argument("--db-host", type=str, help="Database host")
+    database_parser.add_argument("--db-name", type=str, help="Database name")
+
     # Parse the arguments
     args = parser.parse_args()
 

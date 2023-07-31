@@ -7,3 +7,4 @@ reports
 todo.txt
 __pycache__
 annovar/
+database.ini
