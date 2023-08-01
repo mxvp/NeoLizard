@@ -108,7 +108,7 @@ class DatabaseOperations:
                     n_flank VARCHAR(255),
                     c_flank VARCHAR(255),
                     affinity FLOAT NOT NULL,
-                    best_allele FLOAT NOT NULL,
+                    best_allele VARCHAR(255) NOT NULL,
                     affinity_percentile FLOAT NOT NULL,
                     processing_score FLOAT NOT NULL,
                     presentation_score FLOAT NOT NULL,
@@ -198,7 +198,7 @@ class DatabaseOperations:
 
     def insert_initial_data(self):
         """
-        Add prediction data to the database.
+        Add initial data to the database.
         """
 
         try:
@@ -221,7 +221,7 @@ class DatabaseOperations:
                     (sample_name,),
                 )
 
-            # Insert data into the Mutation table
+            # Insert data into the Mutation table and get mutation_id
             for (
                 sample_name,
                 mutation_names,
@@ -237,28 +237,24 @@ class DatabaseOperations:
                         f"Sample '{sample_name}' not found in the Sample table."
                     )
                     continue
-
+                
                 sample_id = sample_id[0]
 
                 for mutation_name in mutation_names:
                     cur.execute(
-                        "SELECT mutation_id FROM Mutation WHERE sample_id = %s AND mutation_name = %s",
+                        "INSERT INTO Mutation (sample_id, mutation_name) VALUES (%s, %s) RETURNING mutation_id",
                         (sample_id, mutation_name),
                     )
                     mutation_id = cur.fetchone()
 
                     if mutation_id is None:
                         logging.error(
-                            f"Mutation '{mutation_name}' not found in the Mutation table for Sample '{sample_name}'."
+                            f"Failed to insert Mutation '{mutation_name}' for Sample '{sample_name}'."
                         )
                         continue
-
+                    
                     mutation_id = mutation_id[0]
 
-                    cur.execute(
-                        "INSERT INTO Mutation (sample_id, mutation_name) VALUES (%s, %s)",
-                        (sample_id, mutation_name),
-                    )
             # Commit the changes
             conn.commit()
 
@@ -483,6 +479,9 @@ class DatabaseOperations:
             raise
 
     def run_add_data_pipeline(self):
+        '''
+        Run the full pipeline.
+        '''
         try:
             self.connect()
             self.insert_initial_data()
