@@ -7,6 +7,9 @@ import uuid
 
 
 class DatabaseOperations:
+    '''
+    Class for creating a neolizard_db PostgreSQL database and adding data from the pipeline and prediction results.
+    '''
     def __init__(self, username, password, host, name, pipeline_data, path_handler):
         self.username = username
         self.password = password
@@ -216,6 +219,21 @@ class DatabaseOperations:
 
             # Insert data into the Sample table
             for sample_name in list(self.pipeline_data.sample_mutations.keys()):
+                # Check if the sample with the same name already exists
+                cur.execute(
+                    "SELECT sample_id FROM Sample WHERE sample_name = %s",
+                    (sample_name,),
+                )
+                existing_sample_id = cur.fetchone()
+
+                if existing_sample_id is not None:
+                    # Sample with the same name already exists, skip insertion
+                    logging.warning(
+                        f"Sample with name '{sample_name}' already exists in the Sample table. Skipping insertion."
+                    )
+                    continue
+
+                # Insert the new sample
                 cur.execute(
                     "INSERT INTO Sample (sample_name) VALUES (%s)",
                     (sample_name,),
@@ -237,10 +255,25 @@ class DatabaseOperations:
                         f"Sample '{sample_name}' not found in the Sample table."
                     )
                     continue
-                
+
                 sample_id = sample_id[0]
 
                 for mutation_name in mutation_names:
+                    # Check if the mutation with the same sample_id and mutation_name already exists
+                    cur.execute(
+                        "SELECT mutation_id FROM Mutation WHERE sample_id = %s AND mutation_name = %s",
+                        (sample_id, mutation_name),
+                    )
+                    existing_mutation_id = cur.fetchone()
+
+                    if existing_mutation_id is not None:
+                        # Mutation with the same sample_id and mutation_name already exists, skip insertion
+                        logging.warning(
+                            f"Mutation with name '{mutation_name}' and sample_id '{sample_id}' already exists in the Mutation table. Skipping insertion."
+                        )
+                        continue
+
+                    # Insert the new mutation
                     cur.execute(
                         "INSERT INTO Mutation (sample_id, mutation_name) VALUES (%s, %s) RETURNING mutation_id",
                         (sample_id, mutation_name),
@@ -252,7 +285,7 @@ class DatabaseOperations:
                             f"Failed to insert Mutation '{mutation_name}' for Sample '{sample_name}'."
                         )
                         continue
-                    
+
                     mutation_id = mutation_id[0]
 
             # Commit the changes
@@ -266,6 +299,7 @@ class DatabaseOperations:
         except (Exception, psycopg2.DatabaseError) as e:
             logging.error(f"Error inserting data into tables: {e}")
             raise
+
 
     def read_predictions(self):
         """
@@ -377,7 +411,7 @@ class DatabaseOperations:
                 host=self.host,
             ) as conn:
                 conn.autocommit = True
-
+    
                 # Create a cursor
                 with conn.cursor() as cur:
                     # Get the sample_id from the Sample table based on the sample_name
@@ -386,32 +420,58 @@ class DatabaseOperations:
                         (sample_name,),
                     )
                     sample_id = cur.fetchone()
-
+    
                     if sample_id is None:
                         # Sample with the provided sample_name does not exist
                         logging.warning(
                             f"Sample with name '{sample_name}' does not exist in the Sample table. Skipping peptide data insertion for {sample_name}_{mutation_name}_{transcript_name}."
                         )
                         return
-
+    
                     sample_id = sample_id[0]
-
+    
                     # Get the mutation_id from the Mutation table based on the mutation_name and sample_id
                     cur.execute(
                         "SELECT mutation_id FROM Mutation WHERE mutation_name = %s AND sample_id = %s",
                         (mutation_name, sample_id),
                     )
                     mutation_id = cur.fetchone()
-
+    
                     if mutation_id is None:
                         # Mutation with the provided mutation_name and sample_id does not exist
                         logging.warning(
                             f"Mutation with name '{mutation_name}' and sample_id '{sample_id}' does not exist in the Mutation table. Skipping peptide data insertion for {sample_name}_{mutation_name}_{transcript_name}."
                         )
                         return
-
+    
                     mutation_id = mutation_id[0]
-
+    
+                    # Check if the peptide already exists in the Peptide table for the given transcript
+                    cur.execute(
+                        """
+                        SELECT peptide_id FROM Peptide
+                        WHERE transcript_id IN (SELECT transcript_id FROM Transcript WHERE mutation_id = %s AND transcript_name = %s)
+                        AND pos = %s AND peptide = %s AND affinity = %s
+                        """,
+                        (
+                            mutation_id,
+                            transcript_name,
+                            pos,
+                            peptide,
+                            affinity,
+                        ),
+                    )
+                    existing_peptide_id = cur.fetchone()
+    
+                    if existing_peptide_id is not None:
+                        # Peptide with the same data already exists, handle it as needed (e.g., update or skip)
+                        # For example, to update the existing peptide, you can use the UPDATE statement
+                        # Here, I'll simply log a message and skip the insertion
+                        logging.warning(
+                            f"Peptide with the same data already exists in the Peptide table for {sample_name}_{mutation_name}_{transcript_name}. Skipping insertion."
+                        )
+                        return
+    
                     # Insert data into the Transcript table
                     cur.execute(
                         """
@@ -423,7 +483,7 @@ class DatabaseOperations:
                         """,
                         (mutation_id, transcript_name),
                     )
-
+    
                     # Insert data into the Peptide table
                     cur.execute(
                         """
@@ -468,15 +528,16 @@ class DatabaseOperations:
                             presentation_percentile,
                         ),
                     )
-
+    
                     peptide_id = cur.fetchone()[0]
-
+    
                 logging.info(
                     f"Peptide data (ID: {peptide_id}) for {sample_name}_{mutation_name}_{transcript_name} added to the database."
                 )
         except (Exception, psycopg2.DatabaseError) as e:
             logging.error(f"Error adding peptide data to the database: {e}")
             raise
+
 
     def run_add_data_pipeline(self):
         '''
