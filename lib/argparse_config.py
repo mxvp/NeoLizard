@@ -121,8 +121,8 @@ def parse_the_args():
     )
     database_parser.add_argument("--db_username", type=str, default='postgres', help="Database username, default superuser is postgres")
     database_parser.add_argument("--db_password", type=str, help="Database password")
-    database_parser.add_argument("--db_host", type=str, default= 'localhost', help="Database host")
-    database_parser.add_argument("--db_name", type=str, default='neolizard_db',help="Database name, lowercase!")
+    database_parser.add_argument("--db_host", type=str, default= 'localhost', help="Database host, default is localhost")
+    database_parser.add_argument("--db_name", type=str, default='neolizard_db',help="Database name, lowercase! Default is neolizard_db")
 
     # Parse the arguments
     args = parser.parse_args()
