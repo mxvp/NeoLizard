@@ -55,12 +55,14 @@ def parse_the_args():
     annovar_parser.add_argument(
         "--annovar_coding_change_commands",
         type=str,
-        help='Enter commands for annovar, excluding input and output, as string e.g. "-build hg38 -dbtype refGene annovar/humandb/ --comment"',
+        default='annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate',
+        help='Enter commands for annovar, excluding input and output, as string e.g. "annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate"',
     )
     annovar_parser.add_argument(
         "--annovar_annotate_variation_commands",
         type=str,
-        help='Enter commands for annovar, excluding input and output, as string e.g. "annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate"',
+        default='-build hg38 -dbtype refGene annovar/humandb/ --comment',
+        help='Enter commands for annovar, excluding input and output, as string e.g. "-build hg38 -dbtype refGene annovar/humandb/ --comment"',
     )
 
     HLA_parser = parser.add_argument_group("HLA", "HLA")

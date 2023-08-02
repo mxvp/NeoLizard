@@ -42,6 +42,7 @@ class AnnovarPipeline:
             except Exception as e:
                 logging.error("Error occurred while annotating file: %s", file[1])
                 logging.error(str(e))
+                raise
         logging.info(
             f"Finished annotating {annotated_files} out of {len(file_list)} files."
         )
@@ -80,6 +81,7 @@ class AnnovarPipeline:
             except Exception as e:
                 logging.error("Error occurred while annotating file: %s", file[1])
                 logging.error(str(e))
+                raise
         logging.info(
             f"Finished creating fastas for {fasta_files} out of {len(file_list)} files."
         )
