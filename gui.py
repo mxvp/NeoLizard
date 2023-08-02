@@ -1,6 +1,11 @@
 import streamlit as st
 import os
 import logging
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+from io import StringIO
 from lib.logger_config import configure_lib_logger, configure_logger
 from lib.path_handler import PathHandler
 from lib.cmd_runner import CommandRunner
@@ -15,127 +20,99 @@ from lib.data_gathering import PipelineData
 from lib.HLA import HLAPipeline
 from lib.database_operations import DatabaseOperations
 from contextlib import contextmanager
-from io import StringIO
-import sys
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import plotly.express as px
 
+# Results page under pages/results.py
 
-# Custom stream to capture the printed output
-class OutputCapturer:
-    def __init__(self):
-        self.buffer = StringIO()
-
-    def write(self, text):
-        self.buffer.write(text)
-
-    def flush(self):
-        pass
-
-
-# Context manager to temporarily redirect the stdout and capture return value
-@contextmanager
-def capture_output():
-    capturer = OutputCapturer()
-    sys.stdout = capturer
-    original_stdout = sys.stdout
-    try:
-        yield capturer.buffer
-    finally:
-        sys.stdout = original_stdout
+st. set_page_config(layout="wide") 
 
 def main():
-    st.title("NeoLizard - Custom Pipeline for Neoantigen Prediction")
+    """
+    Main function for running the NeoLizard streamlit gui.
+    """
 
-    # Create text input for --input
+    # Set title and subtitle
+    st.title("NeoLizard")
+    st.header("Custom Pipeline for Neoantigen Prediction")
+
+    ## Query builder
+
+    # Paths
     input_file = st.text_input(
         "Input File(s) Path", help="Required. Path to the input file(s)."
     )
-
-    # Create text input for --output
     output_folder = st.text_input(
         "Output Folder Path",
         value=os.getcwd(),
         help="Path to the output folder. If not specified, the current working directory will be used.",
     )
-
-    # Create checkbox group for cutadapt arguments
+    # Preprocessing
     st.subheader("Preprocessing (beta)")
-    perform_qc = st.checkbox("Perform QC", help="Perform QC if selected.")
-    perform_cutadapt = st.checkbox(
-        "Perform Cutadapt", help="Perform Cutadapt if selected."
-    )
+    perform_qc = st.checkbox("Perform QC", help="Perform QC using Fastqc and Multiqc.")
+    perform_cutadapt = st.checkbox("Perform Cutadapt", help="Perform Cutadapt.")
     if perform_cutadapt:
         cutadapt_commands = st.text_input(
             "Cutadapt Commands",
-            help="Enter commands for Cutadapt, excluding input and output, as a string e.g., '-q 5 -Q 15,20'.",
+            help="Enter commands for Cutadapt, excluding input and output e.g., '-q 5 -Q 15,20'.",
         )
     else:
-        cutadapt_commands=''
+        cutadapt_commands = ""
 
     remove_cutadapt_input = st.checkbox(
-        "Remove Original File(s)", help="Remove the original file(s) if selected."
+        "Remove Original File(s)",
+        help="Remove the original raw file(s) sequentially to limit disk usage.",
     )
-    custom_command = st.checkbox(
-        "Custom command (beta)",
-        help="Custom command with multiple arguments. Please enter as a string! e.g. 'a_module -m 10 -q 20 -j 4' ",
-    )
+    custom_command = st.checkbox("Custom command (beta)", help="Create custom command.")
     if custom_command:
         custom_command = st.text_input(
             "Custom command (beta)",
-            help="Custom command with multiple arguments. Please enter as a string! e.g. 'a_module -m 10 -q 20 -j 4' ",
+            help="Custom command with multiple arguments. E.g. 'a_module -m 10 -q 20 -j 4' ",
         )
     else:
-        custom_command = ''
+        custom_command = ""
 
     st.subheader("MAF file conversion")
     convert_maf_to_avinput = st.checkbox(
         "Convert MAF to AVINPUT",
-        help="Convert MAF files to AVINPUT format if selected.",
+        help="Convert MAF files to AVINPUT format if selected. Necessary for implementing ANNOVAR.",
     )
 
-    # Create checkbox group for Annovar arguments
-    st.subheader("Annovar")
+    # ANNOVAR
+    st.subheader("ANNOVAR")
     perform_annovar_annotate_variation = st.checkbox(
-        "Perform annotate_variation", help="Perform annotate_variation if selected."
+        "Perform annotate_variation", help="Perform annovar annotate_variation."
     )
     if perform_annovar_annotate_variation:
         annovar_annotate_variation_commands = st.text_input(
             "Annotate Variation Commands",
             value="-build hg38 -dbtype refGene annovar/humandb/ --comment",
-            help="Enter commands for Annovar coding_change, excluding input and output, as a string e.g., '-build hg38 -dbtype refGene annovar/humandb/ --comment'.",
+            help="Enter commands for Annovar coding_change, excluding input and output. E.g. '-build hg38 -dbtype refGene annovar/humandb/ --comment'.",
         )
     else:
-        annovar_annotate_variation_commands=''
+        annovar_annotate_variation_commands = ""
     perform_annovar_coding_change = st.checkbox(
-        "Perform coding_change", help="Perform coding_change if selected."
+        "Perform coding_change", help="Perform annovar coding_change."
     )
     if perform_annovar_coding_change:
         annovar_coding_change_commands = st.text_input(
             "Coding Change Commands",
             value="annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate",
-            help="Enter commands for Annovar annotate_variation, excluding input and output, as a string e.g., 'annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate'.",
+            help="Enter commands for Annovar annotate_variation, excluding input and output. E.g. 'annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate'.",
         )
     else:
-        annovar_coding_change_commands=''
+        annovar_coding_change_commands = ""
 
-    # Create checkbox group for MHCflurry arguments
+    # MHCflurry
     st.subheader("MHCflurry")
-    perform_mhcflurry = st.checkbox(
-        "Perform MHCflurry", help="Perform MHCflurry if selected."
-    )
+    perform_mhcflurry = st.checkbox("Perform MHCflurry", help="Perform MHCflurry.")
     if perform_mhcflurry:
-
         add_flanks = st.checkbox(
             "Generate Peptides with Flanks",
-            help="Generate peptides with flanks for improved accuracy if selected.",
+            help="Generate peptides with extended flanks for improved accuracy (computationally more intensive).",
         )
         peptide_lengths = st.text_input(
             "Peptide Length(s)",
             value="9",
-            help="Enter length(s) of peptides to scan for separated by spaces e.g., '8 9 10 11'.",
+            help="Enter length(s) of peptides to scan for separated by spaces e.g. '8 9 10 11'.",
         )
         use_custom_alleles = st.checkbox(
             "Custom alleles",
@@ -144,24 +121,24 @@ def main():
         )
         if use_custom_alleles:
             custom_alleles = st.text_input(
-                "Enter the alleles separated by spaces e.g., 'HLA-A*31:01'.",
+                "Enter the allele(s) separated by spaces e.g., 'HLA-A*31:01'.",
                 value="HLA-A*31:01",
             )
         else:
-            custom_alleles = "" 
+            custom_alleles = ""
 
         TCGA_alleles = st.checkbox(
             "TCGA alleles",
             help="Use TCGA PanGenome alleles.",
         )
     else:
-        add_flanks =False
-        peptide_lengths = ''
+        add_flanks = False
+        peptide_lengths = ""
         use_custom_alleles = False
-        custom_alleles =''
+        custom_alleles = ""
         TCGA_alleles = False
-    
-    # Create group for database operations
+
+    # database operations
     st.subheader("PostgreSQL ")
     store_db = st.checkbox(
         "Store data in PostgreSQL database",
@@ -185,11 +162,11 @@ def main():
             help="Database name, lowercase! Default is neolizard_db",
         )
     else:
-        db_username=''
-        db_password=''
-        db_host=''
-        db_name=''
-    
+        db_username = ""
+        db_password = ""
+        db_host = ""
+        db_name = ""
+
     # Create a "Run" button to trigger the CLI functionality
     if st.button("Run NeoLizard"):
         # Create argparse.Namespace object with the selected options and their values
@@ -207,44 +184,51 @@ def main():
             "annovar_annotate_variation_commands": annovar_annotate_variation_commands,
             "mhcflurry": perform_mhcflurry,
             "add_flanks": add_flanks,
-            "peptide_lengths": [int(length) for length in peptide_lengths.split()],
+            "peptide_lengths": [int(length) for length in peptide_lengths.split(' ')],
             "custom_alleles": custom_alleles.split(),
             "TCGA_alleles": TCGA_alleles,
-            "store_db":store_db,
-            "db_username":db_username,
-            'db_password':db_password,
-            'db_host':db_host,
-            'db_name':db_name
+            "store_db": store_db,
+            "db_username": db_username,
+            "db_password": db_password,
+            "db_host": db_host,
+            "db_name": db_name,
         }
         st.subheader("Execution Output")
         execute_cli(args)
 
         # Display success message
         st.success("NeoLizard execution is complete!")
-    
+
 
 def execute_cli(args):
+    '''
+    Will execute all all selected query elements.
+    '''
     output = ""
 
     os.makedirs(
         args["output"], exist_ok=True
     )  # Create output folder if it doesn't exist
 
+    # Initiate pathing handler
     pathing = PathHandler(args["input"], args["output"])
 
     if not pathing.validate_paths():
         logging.error("Invalid input paths. Aborting!")
         return
 
+    # Initiate other objects
     command_runner = CommandRunner()
     pipeline_data = PipelineData(pathing)
     HLA_pipeline = HLAPipeline(pathing, command_runner)
+
+    ## Run each selected query element, same workflow as NeoLizard.py main CLI functionality.
 
     if args["qc"]:
         with st.spinner("Running QC..."):
             qc_pipeline = QCPipeline(pathing, command_runner)
             qc_pipeline.run_pipeline()
-    
+
     if args["cutadapt"]:
         with st.spinner("Running Cutadapt..."):
             cutadapt_pipeline = CutadaptPipeline(pathing, command_runner)
@@ -255,18 +239,18 @@ def execute_cli(args):
 
     if args["m2a"]:
         with st.spinner("Converting MAF to AVINPUT..."):
-            try:    
+            try:
                 if args["TCGA_alleles"]:
                     pipeline_data.link_HLA_ID_TCGA_to_MAF_samples()
                     HLA_dict = HLA_pipeline.process_TCGA_HLA(
-                    custom_source="./resources/panCancer_hla.tsv"
+                        custom_source="./resources/panCancer_hla.tsv"
                     )
                     pipeline_data.link_HLA_TCGA_to_samples(HLA_dict)
                 m2a_pipeline = MAFtoAVInputConverter(pathing)
                 m2a_pipeline.run_pipeline()
                 pipeline_data.link_samples_to_mutation_from_avinput()
             except Exception as e:
-                st.write(f'in m2a: {e}')
+                st.write(f"in m2a: {e}")
     if args["annovar_annotate_variation"]:
         with st.spinner("Running Annovar annotate_variation..."):
             try:
@@ -275,7 +259,7 @@ def execute_cli(args):
                     args["annovar_annotate_variation_commands"]
                 )
             except Exception as e:
-                st.write(f'in annovar annotate: {e}')
+                st.write(f"in annovar annotate: {e}")
 
     if args["annovar_coding_change"]:
         with st.spinner("Running Annovar coding_change..."):
@@ -288,7 +272,7 @@ def execute_cli(args):
                 if args["TCGA_alleles"]:
                     pipeline_data.link_transcript_to_TCGA_HLA_alleles()
             except Exception as e:
-                st.write(f'in annovar coding change: {e}')
+                st.write(f"in annovar coding change: {e}")
 
     if args["mhcflurry"]:
         with st.spinner("Running MHCflurry..."):
@@ -305,8 +289,9 @@ def execute_cli(args):
             mhcflurry_pipeline.run_mhcflurry_pipeline(
                 sequences, flanks, args["peptide_lengths"], args["add_flanks"], alleles
             )
-        st.session_state['predictions'] = pathing.input_path
 
+        # Update session_state value when analysis is complete and results page can be generated.
+        st.session_state["predictions"] = pathing.input_path
 
     if args["store_db"]:
         with st.spinner("Storing data in PostgreSQL database..."):
@@ -323,8 +308,7 @@ def execute_cli(args):
         print_lizard()
 
 
-
-
 if __name__ == "__main__":
-    st.session_state['predictions'] = None
+    # Initialize session_state value (these are carried over pages).
+    st.session_state["predictions"] = None
     main()
