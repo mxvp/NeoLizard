@@ -305,6 +305,8 @@ def execute_cli(args):
             mhcflurry_pipeline.run_mhcflurry_pipeline(
                 sequences, flanks, args["peptide_lengths"], args["add_flanks"], alleles
             )
+        st.session_state['predictions'] = pathing.input_path
+
 
     if args["store_db"]:
         with st.spinner("Storing data in PostgreSQL database..."):
@@ -320,5 +322,9 @@ def execute_cli(args):
     with st.spinner("Running Lizard..."):
         print_lizard()
 
+
+
+
 if __name__ == "__main__":
+    st.session_state['predictions'] = None
     main()
