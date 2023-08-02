@@ -2,8 +2,10 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 st.set_page_config(layout="wide") 
-file_path = "/Users/mvp/Documents/biolizard/Project/NeoLizard/data/TCGA_prad/predictions.csv"
+st.sidebar.image('./resources/logo.png')
 
+
+file_path = "/Users/mvp/Documents/biolizard/Project/NeoLizard/data/TCGA_prad/predictions.csv"
 df = pd.read_csv(file_path)
 selected_columns = [
     "sequence_name",
