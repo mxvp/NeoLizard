@@ -22,17 +22,15 @@ from lib.database_operations import DatabaseOperations
 from contextlib import contextmanager
 
 # Results page under pages/results.py
-
-st. set_page_config(layout="wide") 
-st.sidebar.image('./resources/NEO_logo.png')
+st.set_page_config(layout="wide") 
+st.image('./resources/NEO_logo.png')
 
 def main():
     """
     Main function for running the NeoLizard streamlit gui.
     """
 
-    # Set title and subtitle
-    st.title("NeoLizard")
+    # set subtitle
     st.header("Custom Pipeline for Neoantigen Prediction")
 
     ## Query builder
