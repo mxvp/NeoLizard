@@ -1,5 +1,6 @@
 import os
 import logging
+import pandas as pd
 
 try:
     from mhcflurry import Class1AffinityPredictor, Class1PresentationPredictor
@@ -25,21 +26,23 @@ class MHCflurryPipeline:
         """
         Creates peptides and flanks as a better way of doing a scan for peptides.
         """
-        peptides, N_flanks, C_flanks, sequence_names, alleles = [], [], [], [], []
+        peptides, N_flanks, C_flanks, sequence_names, alleles = [], [], [], [], dict()
         for count, value in enumerate(sequences):
             seq = value[1]
             name = value[0]
+            x=0
             for l in lengths:
                 for index in range(len(seq)):
                     if index + l <= len(seq):  # Check if slicing is possible
+                        x+=1
                         peptides.append(seq[index : index + l])
                         N_flanks.append(flanks[count][0] + seq[:index])
                         C_flanks.append(seq[index:] + flanks[count][1])
                         sequence_names.append(name)
                         if isinstance(input_alleles,dict):
-                            alleles.append(input_alleles[seq[0]])
+                            alleles[name+'seq'+str(x)]=input_alleles[value[0]]
                         else:
-                            alleles.append[input_alleles]
+                            alleles[name+'seq'+str(x)]=input_alleles
         return peptides, N_flanks, C_flanks, sequence_names, alleles
 
     def run_mhcflurry_pipeline(
@@ -63,13 +66,22 @@ class MHCflurryPipeline:
                 peptides, N_flanks, C_flanks, sequence_names, alleles = self.create_peptides(
                     sequences, flanks, lengths, input_alleles
                 )
-                predictions = predictor.predict(
-                    peptides=peptides,
-                    n_flanks=N_flanks,
-                    c_flanks=C_flanks,
-                    alleles=alleles,
-                )
-                predictions.insert(0, "sequence_header", sequence_names)
+                # Run predict for every peptide
+                predictions=pd.DataFrame()
+                for x in range(len(peptides)):
+                    onepairdict=dict()
+                    onepairdict[list(alleles.keys())[x]]=alleles[list(alleles.keys())[x]]
+                    prediction = predictor.predict(
+                        peptides=[peptides[x]],
+                        n_flanks=[N_flanks[x]],
+                        c_flanks=[C_flanks[x]],
+                        alleles=onepairdict,
+                    )
+                    predictions = predictions.append(prediction, ignore_index=True)
+                # create sequence_name column for further visualisation
+                new_header = 'sequence_name'
+                predictions[new_header] = predictions['sample_name']
+                predictions = predictions[[new_header] + [col for col in predictions.columns if col != new_header]]
                 predictions.to_csv(outfile, index=False)
             else:
                 if isinstance(input_alleles,dict): # Check if TCGA alleles were given
@@ -80,7 +92,6 @@ class MHCflurryPipeline:
                 predictor.predict_sequences(
                     sequences, alleles=alleles, peptide_lengths=lengths
                 ).to_csv(outfile, index=False)
-
             self.path_handler.update_input(outfile)
             logging.info("Predictions completed.")
             self.path_handler.update_input(outfile)
