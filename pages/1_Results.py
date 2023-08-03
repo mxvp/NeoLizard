@@ -29,28 +29,28 @@ elif st.session_state["predictions"] != None:
     st.header("RESULTS")
     st.subheader("Prediction Data")
     st.dataframe(selected_data)
-    
+
     # Create a histogram and box plot for each column (except "peptide", "sequence_name", and "sample_name")
     st.subheader("Histograms and Box Plots")
-    
+
     # Check if there are more than 1 different lengths in the "peptide" column
     unique_lengths = df["peptide"].str.len().nunique()
-    
+
     if unique_lengths > 1:
         df["peptide_length"] = df["peptide"].str.len()
     else:
         df["peptide_length"] = 0
-    
+
     # Create a checkbox for enabling/disabling the overlay for peptide lengths
     show_overlay_histograms_column = st.checkbox(f"Enable Overlay Histograms for Peptide Lengths")
     log_axes = st.checkbox(f"Enable logarithmic axis for relevant figures")
-    
+
     num_plots_per_row = 2
     num_rows = (len(selected_columns) + num_plots_per_row - 1) // num_plots_per_row
-    
+
     # Initialize the col1 and col2 variables
     col1, col2 = st.columns(num_plots_per_row)
-    
+
     for i, column in enumerate(selected_columns):
         if column not in ["peptide", "sequence_name", "sample_name", "best_allele","n_flank", "c_flank"]:
             fig_histogram = px.histogram(
@@ -68,7 +68,7 @@ elif st.session_state["predictions"] != None:
                 col1, col2 = st.columns(num_plots_per_row)
             col1.plotly_chart(fig_histogram, use_container_width=True)
             col2.plotly_chart(fig_boxplot, use_container_width=True)
-    
+
     # Add the histograms for "n_flank", "c_flank", and "best_allele" at the end
     order =['L','R','L']
     x=0
@@ -87,3 +87,8 @@ elif st.session_state["predictions"] != None:
         else:
             col2.plotly_chart(fig_histogram, use_container_width=True)
         x+=1
+
+    st.subheader("Legend")
+    st.caption("**Affinity (nM)**: *Lower values indicate stronger binders. Commonly-used threshold for peptides with a reasonable chance of being immunogenic is 500 nM.*")
+    st.caption("**Affinity percentile**: *the percentile of the affinity prediction among a large number of random peptides tested on that allele (range 0 - 100). Lower is stronger. Two percent is a commonly-used threshold.*")
+    st.caption("**Antigen processing and presentation scores**: *range from 0 to 1 with higher values indicating more favorable processing or presentation.*")

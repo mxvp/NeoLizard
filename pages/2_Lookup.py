@@ -49,3 +49,8 @@ elif st.session_state["predictions"] != None:
             else:
                 st.write(f"{column}: {value}")
     
+
+    st.subheader("Legend")
+    st.caption("**Affinity (nM)**: *Lower values indicate stronger binders. Commonly-used threshold for peptides with a reasonable chance of being immunogenic is 500 nM.*")
+    st.caption("**Affinity percentile**: *the percentile of the affinity prediction among a large number of random peptides tested on that allele (range 0 - 100). Lower is stronger. Two percent is a commonly-used threshold.*")
+    st.caption("**Antigen processing and presentation scores**: *range from 0 to 1 with higher values indicating more favorable processing or presentation.*")
