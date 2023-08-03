@@ -1,5 +1,4 @@
-NEOLIZARD
----------
+![neolizard logo](https://raw.githubusercontent.com/mxvp/NeoLizard/main/resources/NEO_logo.png)
 
 NeoLizard is a package for setting up and running a custom pipeline for neoantigen prediction on NGS samples, VCF or TCGA MAF files.
 Pipeline can start from processed vcf/maf/avinput files or from raw sequencing fastq/bam files.
