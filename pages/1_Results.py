@@ -4,27 +4,25 @@ import plotly.express as px
 
 st.set_page_config(layout="wide")
 
-# Check whether the results are readyß
-if st.session_state["predictions"] == None:
+# Check whether the results are ready
+if st.session_state.get("predictions") is None:
     st.header("Please run the pipeline first!")
-
-elif st.session_state["predictions"] != None:
+else:
     # Load the CSV file
     file_path = st.session_state["predictions"]
     df = pd.read_csv(file_path)
     selected_columns = [
         "sequence_name",
-        "pos",
         "peptide",
         "n_flank",
         "c_flank",
         "affinity",
         "best_allele",
-        "affinity_percentile",
         "processing_score",
         "presentation_score",
         "presentation_percentile",
     ]
+    
     # Filter the data to show only the selected columns
     selected_data = df[selected_columns]
     # Show the selected columns as a table
@@ -32,7 +30,7 @@ elif st.session_state["predictions"] != None:
     st.subheader("Prediction Data")
     st.dataframe(selected_data)
 
-    # Create a histogram and box plot for each column (except "peptide", "sequence_name", and "sample_name")
+    # Create a histogram and box plot for each column (except "peptide" and "sequence_name")
     st.subheader("Histograms and Box Plots")
 
     # Check if there are more than 1 different lengths in the "peptide" column
