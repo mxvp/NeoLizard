@@ -8,7 +8,7 @@ if st.session_state["predictions"] == None:
 elif st.session_state["predictions"] != None:
 # Load the CSV file
     file_path = st.session_state["predictions"]
-    st.header("Sequence Lookup")
+    st.header("SEQUENCE LOOKUP")
     df = pd.read_csv(file_path)
     selected_columns = [
         "sequence_name",
@@ -32,11 +32,11 @@ elif st.session_state["predictions"] != None:
     # Show data for the selected sample
     st.subheader(f"Data for {selected_sequence}")
     
-    unique_lengths = df["peptide"].str.len().nunique()
+    amount = df["peptide"].count()
     for column in selected_columns:
         if column != "sequence_name":
             value = sequence_data[column].iloc[0]
-            if unique_lengths > 1:
+            if amount > 1:
                 if pd.api.types.is_numeric_dtype(df[column]) and column!="pos":
                     average = df[column].mean()
                     percentage_difference = (value - average) / average * 100
