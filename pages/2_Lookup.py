@@ -37,7 +37,7 @@ elif st.session_state["predictions"] != None:
         if column != "sequence_name":
             value = sequence_data[column].iloc[0]
             if unique_lengths > 1:
-                if pd.api.types.is_numeric_dtype(df[column]):
+                if pd.api.types.is_numeric_dtype(df[column]) and column!="pos":
                     average = df[column].mean()
                     percentage_difference = (value - average) / average * 100
                     if percentage_difference > 0:
