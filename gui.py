@@ -24,7 +24,7 @@ from contextlib import contextmanager
 # Results page under pages/results.py
 
 st. set_page_config(layout="wide") 
-st.sidebar.image('./resources/logo.png')
+st.sidebar.image('./resources/NEO_logo.png')
 
 def main():
     """

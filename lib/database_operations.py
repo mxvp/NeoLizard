@@ -1,7 +1,6 @@
 import psycopg2
 import logging
 import csv
-import uuid
 
 # Make sure the database name is LOWERCASE!!
 

@@ -1,0 +1,8 @@
+matplotlib==3.6.2
+mhcflurry==2.0.6
+pandas==1.5.3
+plotly==5.15.0
+psycopg2==2.9.6
+seaborn==0.12.2
+setuptools==58.0.4
+streamlit==1.24.1
