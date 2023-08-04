@@ -42,7 +42,7 @@ Based on intended pipeline usage, install necessary tools.
 - Registration required, download at: https://annovar.openbioinformatics.org/en/latest/user-guide/download
 - After downloading, move ANNOVAR into the NeoLizard dir or add to path.
 - Assure ANNOVAR works as expected: https://annovar.openbioinformatics.org/en/latest/user-guide/startup
-- Make sure ANNOVAR is configured with desired reference genome, I advise downloading the official hg38.
+- Make sure ANNOVAR is configured with the desired reference genome, I advise downloading the official hg38.
     - perl ./annotate_variation.pl -buildver hg38 -downdb refGene humandb/
     - perl ./annotate_variation.pl --buildver hg38 --downdb seq humandb/hg38_seq
     - perl ./retrieve_seq_from_fasta.pl humandb/hg38_refGene.txt -seqdir humandb/hg38_seq -format refGene -outfile humandb/hg38_refGeneMrna.fa
@@ -55,7 +55,7 @@ Based on intended pipeline usage, install necessary tools.
 ```
 $ pip install mhcflurry
 ```
-- If you don't already have it, you will also need to install tensorflow version 2.2.0 or later. On most platforms you can do this with:
+- If you don't already have it, you will also need to install tensorflow version 2.2.0 or later.
 ```
 $ pip install tensorflow
 ```
@@ -120,7 +120,7 @@ output/
 1. NeoLizard will convert MAF files to .avinput, a custom made input structure that is perfectly compatible with ANNOVAR.
 2. Using ANNOVAR, NeoLizard will annotate and generate fasta sequences containing the mutations of interest.
 3. Fasta sequences will be curated and candidate mutation-containing peptide sequences will be generated with corresponding flanks for extra precision.
-4. Based on MHCflurry trained models, binding affinities, presentation scores and processing scores will be predicted for candidate peptides for corresponding HLA-alleles.
+4. Based on MHCflurry trained models, binding affinities, presentation scores and processing scores will be predicted for candidate peptides with corresponding HLA-alleles.
 5. NeoLizard will gather results in a ```.csv``` file and store them in a relational format using PostgreSQL if selected.
 
 - Note: if ```TCGA_alleles``` is selected (recommended), NeoLizard will automatically link sample ID's to corresponding HLA-alleles using data from the Pan-Cancer Atlas.
@@ -129,7 +129,7 @@ output/
 
 
 ## Preprocessing pipeline (beta)
-The preprocessing pipeline (beta) can be customized using the custom ```--cmd``` flag. Make the called modules are present in your $PATH. Recommended usage is to perform QC (and adapter removal) using NeoLizard, followed by manual preprocessing based on the generated QC logs. After completion, perform the NeoLizard neoantigen prediction pipeline on resulting vcf/maf files.
+The preprocessing pipeline (beta) can be customized using the custom ```--cmd``` flag. Make sure the called modules are present in your $PATH. Recommended usage is to perform QC (and adapter removal) using NeoLizard, followed by manual preprocessing based on the generated QC logs. After completion, perform the NeoLizard neoantigen prediction pipeline on resulting vcf/maf files.
 
 
 
@@ -270,6 +270,6 @@ A cluster-analysis was performed on a subset of 500 resulting peptides that show
 
 Upon completion of Gibbs-clustering, sequence-logos were generated for all clusters.
 
-! The R-scripts and results can be found respectively in /scripts and /resources/analysis.
+The R-scripts and results can be found respectively in /scripts and /resources/analysis.
 
 ![analysis results](https://raw.githubusercontent.com/mxvp/NeoLizard/main/resources/analysis_results.gif)
