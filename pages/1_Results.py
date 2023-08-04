@@ -77,7 +77,7 @@ else:
             fig_boxplot.update_layout(
                 yaxis_type="log"
                 if column
-                in ["presentation_percentile", "affinity_percentile", "affinity", "pos"]
+                in ["presentation_percentile", "affinity_percentile", "affinity", "pos","processing_score","presentation_score"]
                 and log_axes # log y-axis if checkbox is ticked
                 else "linear"
             )

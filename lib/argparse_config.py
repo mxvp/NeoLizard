@@ -56,13 +56,13 @@ def parse_the_args():
         "--annovar_coding_change_commands",
         type=str,
         default='annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate',
-        help='Enter commands for annovar, excluding input and output, as string e.g. "annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate"',
+        help='Enter commands for annovar, excluding input and output, as string default: "annovar/humandb/hg38_refGene.txt annovar/humandb/hg38_refGeneMrna.fa --includesnp --onlyAltering --alltranscript --tolerate"',
     )
     annovar_parser.add_argument(
         "--annovar_annotate_variation_commands",
         type=str,
         default='-build hg38 -dbtype refGene annovar/humandb/ --comment',
-        help='Enter commands for annovar, excluding input and output, as string e.g. "-build hg38 -dbtype refGene annovar/humandb/ --comment"',
+        help='Enter commands for annovar, excluding input and output, as string default: "-build hg38 -dbtype refGene annovar/humandb/ --comment"',
     )
 
     HLA_parser = parser.add_argument_group("HLA", "HLA")
@@ -86,14 +86,14 @@ def parse_the_args():
     mhcflurry_parser.add_argument(
         "--add_flanks",
         action="store_true",
-        help="Generate peptides of given length(s) in sequence and test them --> can add flanks for improved accuracy.",
+        help="Generate peptides of given length(s) in sequence and test them --> can add flanks for improved accuracy. (computationally more expensive, only use for low amounts of sequences)",
     )
     mhcflurry_parser.add_argument(
         "--peptide_lengths",
         type=int,
         default=[9],
         nargs="+",
-        help="Enter length(s) of peptides to scan for."
+        help="Enter length(s) of peptides to scan for, separated by spaces. Default is 9."
     )
     mhcflurry_parser.add_argument(
         "--TCGA_alleles",
