@@ -262,6 +262,14 @@ streamlit run neolizard.py
 
 ![neolizard logo](https://raw.githubusercontent.com/mxvp/NeoLizard/main/resources/NeoLizard_web_tutorial.gif)
 
-
 # 4. Analysis
 
+Upon pipeline completion. A range of analyses can be performed on the prediction results. By way of illustration, a pipeline run was performed on the TCGA_PRAD data. This dataset contains about 500 MAF files of Prostate Cancer patients and is open source (https://portal.gdc.cancer.gov/). The MAF files can be downloaded using the gdc-client (https://gdc.cancer.gov/access-data/gdc-data-transfer-tool).
+
+A cluster-analysis was performed on a subset of 500 resulting peptides that showed a binding affinity < 35nM and affinity percentiles < 0.015. These criteria ensure the accuracy of the subset selection.
+
+Upon completion of Gibbs-clustering, sequence-logos were generated for all clusters.
+
+! The R-scripts and results can be found respectively in /scripts and /resources/analysis.
+
+![analysis results](https://raw.githubusercontent.com/mxvp/NeoLizard/main/resources/analysis_results.gif)
